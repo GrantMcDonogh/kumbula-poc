@@ -1,0 +1,22 @@
+{{define "settings_form"}}
+<h4>Project Settings</h4>
+{{if .SettingsError}}<p class="error-msg">{{.SettingsError}}</p>{{end}}
+{{if .SettingsSuccess}}<p style="color: var(--pico-ins-color);">{{.SettingsSuccess}}</p>{{end}}
+<div class="danger-zone">
+    <h4>Danger Zone</h4>
+    <p>Permanently delete this project. This will:</p>
+    <ul>
+        <li>Stop and remove the running container</li>
+        <li>Drop the provisioned database</li>
+        <li>Delete the Gitea repository</li>
+        <li>Remove all build history and environment variables</li>
+    </ul>
+    <form method="POST" action="/projects/{{.Project.Name}}/settings?action=destroy"
+          onsubmit="return confirm('Are you sure you want to destroy {{.Project.Name}}? This cannot be undone.')">
+        <input type="hidden" name="_csrf" value="{{.CSRF}}">
+        <button type="submit" class="outline" style="--pico-color: var(--pico-del-color); --pico-border-color: var(--pico-del-color);">
+            Destroy {{.Project.Name}}
+        </button>
+    </form>
+</div>
+{{end}}

@@ -39,10 +39,10 @@ git push kumbula main</code></pre>
 {{template "build_list" .}}
 
 {{else if eq .Tab "env"}}
-<p>Environment variables coming soon.</p>
+{{template "envvar_form" .}}
 
 {{else if eq .Tab "settings"}}
-<p>Settings coming soon.</p>
+{{template "settings_form" .}}
 
 {{end}}
 {{end}}

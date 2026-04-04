@@ -1,0 +1,40 @@
+{{define "envvar_form"}}
+<div id="envvar-section">
+    <h4>Environment Variables</h4>
+    <p><small>Changes take effect on the next deploy. <code>DATABASE_URL</code> is managed automatically.</small></p>
+
+    {{if .Project.DatabaseURL.Valid}}
+    <div class="envvar-row">
+        <input class="envvar-key" type="text" value="DATABASE_URL" disabled>
+        <input class="envvar-value" type="text" value="(managed by KumbulaCloud)" disabled>
+        <span></span>
+    </div>
+    {{end}}
+
+    {{range .EnvVars}}
+    <div class="envvar-row" id="envvar-{{.ID}}">
+        <input class="envvar-key" type="text" value="{{.Key}}" disabled>
+        <input class="envvar-value" type="text" value="{{.Value}}" disabled>
+        <form method="POST" action="/projects/{{$.Project.Name}}/env?_method=DELETE&id={{.ID}}"
+              hx-delete="/projects/{{$.Project.Name}}/env?id={{.ID}}"
+              hx-target="#envvar-section"
+              hx-swap="outerHTML"
+              hx-headers='{"X-CSRF-Token": "{{$.CSRF}}"}'>
+            <button type="submit" class="outline secondary btn-sm">Remove</button>
+        </form>
+    </div>
+    {{end}}
+
+    <form method="POST" action="/projects/{{.Project.Name}}/env"
+          hx-post="/projects/{{.Project.Name}}/env"
+          hx-target="#envvar-section"
+          hx-swap="outerHTML"
+          hx-headers='{"X-CSRF-Token": "{{.CSRF}}"}'>
+        <div class="envvar-row">
+            <input class="envvar-key" type="text" name="key" placeholder="KEY" required>
+            <input class="envvar-value" type="text" name="value" placeholder="value" required>
+            <button type="submit" class="btn-sm">Add</button>
+        </div>
+    </form>
+</div>
+{{end}}
