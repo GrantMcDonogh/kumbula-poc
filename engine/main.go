@@ -23,7 +23,8 @@ const (
 
 // GiteaWebhook is the payload Gitea sends on push
 type GiteaWebhook struct {
-	Ref        string `json:"ref"`
+	Ref   string `json:"ref"`
+	After string `json:"after"`
 	Repository struct {
 		Name     string `json:"name"`
 		FullName string `json:"full_name"`
@@ -32,6 +33,9 @@ type GiteaWebhook struct {
 	Pusher struct {
 		Login string `json:"login"`
 	} `json:"pusher"`
+	HeadCommit struct {
+		ID string `json:"id"`
+	} `json:"head_commit"`
 }
 
 // DeployResult tracks a deployment
@@ -192,13 +196,50 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Deploy triggered: %s (by %s)", appName, payload.Pusher.Login)
 
-	// Respond immediately, deploy in background
+	// Look up the project in the database
+	project, err := GetProjectByName(appName)
+	if err != nil {
+		// Project not found in DB — fall back to legacy in-memory deploy
+		log.Printf("  [%s] No DB project found, using legacy deploy", appName)
+		w.WriteHeader(http.StatusAccepted)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status": "deploying",
+			"app":    appName,
+			"url":    fmt.Sprintf("http://%s.%s", appName, DEPLOY_DOMAIN),
+		})
+		go deploy(appName, cloneURL)
+		return
+	}
+
+	// Extract commit SHA from payload (prefer head_commit.id, fall back to after)
+	commitSHA := payload.HeadCommit.ID
+	if commitSHA == "" {
+		commitSHA = payload.After
+	}
+	if commitSHA == "" {
+		commitSHA = "unknown"
+	}
+
+	// Create a build record
+	build, err := CreateBuild(project.ID, commitSHA)
+	if err != nil {
+		log.Printf("  [%s] Failed to create build: %v", appName, err)
+		http.Error(w, "Failed to create build", http.StatusInternalServerError)
+		return
+	}
+
+	// Update project status to building
+	UpdateProjectStatus(project.ID, "building", "")
+
+	// Respond with 202 and build info
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(map[string]string{
-		"status": "deploying",
-		"app":    appName,
-		"url":    fmt.Sprintf("http://%s.%s", appName, DEPLOY_DOMAIN),
+		"status":   "building",
+		"app":      appName,
+		"build_id": fmt.Sprintf("%d", build.ID),
+		"url":      fmt.Sprintf("http://%s.%s", appName, DEPLOY_DOMAIN),
 	})
 
-	go deploy(appName, cloneURL)
+	go deployWithBuild(project, build, cloneURL)
 }
