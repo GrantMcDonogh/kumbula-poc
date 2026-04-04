@@ -37,7 +37,7 @@ func handleEnvVars(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "invalid env var id", http.StatusBadRequest)
 			return
 		}
-		if err := DeleteEnvVar(id); err != nil {
+		if err := DeleteEnvVar(id, project.ID); err != nil {
 			log.Printf("DeleteEnvVar error: %v", err)
 			http.Error(w, "failed to delete env var", http.StatusInternalServerError)
 			return

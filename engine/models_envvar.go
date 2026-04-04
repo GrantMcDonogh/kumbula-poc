@@ -41,7 +41,7 @@ func SetEnvVar(projectID int, key, value string) error {
 	return err
 }
 
-func DeleteEnvVar(envVarID int) error {
-	_, err := DB.Exec(`DELETE FROM project_env_vars WHERE id = $1`, envVarID)
+func DeleteEnvVar(envVarID, projectID int) error {
+	_, err := DB.Exec(`DELETE FROM project_env_vars WHERE id = $1 AND project_id = $2`, envVarID, projectID)
 	return err
 }

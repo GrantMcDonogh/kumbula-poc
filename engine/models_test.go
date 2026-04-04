@@ -295,7 +295,7 @@ func TestEnvVarCRUD(t *testing.T) {
 	}
 
 	// Delete
-	if err := DeleteEnvVar(vars2[0].ID); err != nil {
+	if err := DeleteEnvVar(vars2[0].ID, p.ID); err != nil {
 		t.Fatalf("DeleteEnvVar: %v", err)
 	}
 	vars3, _ := GetEnvVarsByProject(p.ID)

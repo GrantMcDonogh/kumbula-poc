@@ -21,7 +21,7 @@ func handleRedeploy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate CSRF
-	if r.FormValue("csrf_token") != CtxCSRF(r) {
+	if r.FormValue("_csrf") != CtxCSRF(r) {
 		http.Error(w, "Invalid CSRF token", http.StatusForbidden)
 		return
 	}

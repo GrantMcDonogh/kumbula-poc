@@ -18,10 +18,10 @@ func RunMigrations() error {
 			user_id      INTEGER NOT NULL REFERENCES users(id),
 			name         TEXT NOT NULL UNIQUE,
 			gitea_repo   TEXT NOT NULL DEFAULT '',
-			container_id TEXT NOT NULL DEFAULT '',
+			container_id TEXT,
 			status       TEXT NOT NULL DEFAULT 'created',
 			url          TEXT NOT NULL DEFAULT '',
-			database_url TEXT NOT NULL DEFAULT '',
+			database_url TEXT,
 			created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
 			updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 		)`,
