@@ -13,6 +13,7 @@ type User struct {
 	PasswordHash  string
 	GiteaPassword string
 	GiteaToken    string
+	GithubToken   string
 	CreatedAt     time.Time
 }
 
@@ -25,9 +26,9 @@ func CreateUser(username, email, password, giteaPassword string) (*User, error) 
 	err = DB.QueryRow(
 		`INSERT INTO users (username, email, password_hash, gitea_password)
 		 VALUES ($1, $2, $3, $4)
-		 RETURNING id, username, email, password_hash, gitea_password, gitea_token, created_at`,
+		 RETURNING id, username, email, password_hash, gitea_password, gitea_token, github_token, created_at`,
 		username, email, string(hash), giteaPassword,
-	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.GiteaPassword, &u.GiteaToken, &u.CreatedAt)
+	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.GiteaPassword, &u.GiteaToken, &u.GithubToken, &u.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -37,9 +38,9 @@ func CreateUser(username, email, password, giteaPassword string) (*User, error) 
 func GetUserByUsername(username string) (*User, error) {
 	u := &User{}
 	err := DB.QueryRow(
-		`SELECT id, username, email, password_hash, gitea_password, gitea_token, created_at
+		`SELECT id, username, email, password_hash, gitea_password, gitea_token, github_token, created_at
 		 FROM users WHERE username = $1`, username,
-	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.GiteaPassword, &u.GiteaToken, &u.CreatedAt)
+	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.GiteaPassword, &u.GiteaToken, &u.GithubToken, &u.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -49,9 +50,9 @@ func GetUserByUsername(username string) (*User, error) {
 func GetUserByID(id int) (*User, error) {
 	u := &User{}
 	err := DB.QueryRow(
-		`SELECT id, username, email, password_hash, gitea_password, gitea_token, created_at
+		`SELECT id, username, email, password_hash, gitea_password, gitea_token, github_token, created_at
 		 FROM users WHERE id = $1`, id,
-	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.GiteaPassword, &u.GiteaToken, &u.CreatedAt)
+	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.GiteaPassword, &u.GiteaToken, &u.GithubToken, &u.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +61,11 @@ func GetUserByID(id int) (*User, error) {
 
 func UpdateGiteaToken(userID int, token string) error {
 	_, err := DB.Exec(`UPDATE users SET gitea_token = $1 WHERE id = $2`, token, userID)
+	return err
+}
+
+func UpdateGithubToken(userID int, token string) error {
+	_, err := DB.Exec(`UPDATE users SET github_token = $1 WHERE id = $2`, token, userID)
 	return err
 }
 
