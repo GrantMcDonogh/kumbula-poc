@@ -1,0 +1,76 @@
+version: "3.8"
+
+networks:
+  kumbula:
+    name: kumbula
+    driver: bridge
+
+volumes:
+  gitea_data:
+  postgres_data:
+  traefik_certs:
+
+services:
+  # ─── Reverse Proxy ───────────────────────────────────────
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    environment:
+      - DOCKER_API_VERSION=1.45
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=kumbula"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "8080:8080"   # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - kumbula
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.kumbula.local`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+  # ─── Git Server ──────────────────────────────────────────
+  gitea:
+    image: gitea/gitea:1.22
+    container_name: gitea
+    restart: unless-stopped
+    environment:
+      - GITEA__server__DOMAIN=gitea.kumbula.local
+      - GITEA__server__ROOT_URL=http://gitea.kumbula.local/
+      - GITEA__server__HTTP_PORT=3000
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__service__DISABLE_REGISTRATION=false
+      - GITEA__webhook__ALLOWED_HOST_LIST=*
+    volumes:
+      - gitea_data:/data
+    networks:
+      - kumbula
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitea.rule=Host(`gitea.kumbula.local`)"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+
+  # ─── Shared PostgreSQL ──────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: kumbula-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kumbula_admin
+      POSTGRES_PASSWORD: kumbula_secret_2024
+      POSTGRES_DB: kumbula_system
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - kumbula

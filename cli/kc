@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# kc — KumbulaCloud CLI
+set -euo pipefail
+
+GITEA_URL="${GITEA_URL:-http://gitea.kumbula.local}"
+ENGINE_URL="${ENGINE_URL:-http://localhost:9000}"
+DOMAIN="kumbula.local"
+
+case "${1:-help}" in
+
+  create)
+    APP_NAME="${2:?Usage: kc create <app-name>}"
+    echo "Creating $APP_NAME on KumbulaCloud..."
+    curl -s -X POST "$GITEA_URL/api/v1/user/repos" \
+      -H "Authorization: token $GITEA_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "{\"name\": \"$APP_NAME\", \"auto_init\": true, \"private\": false}" | jq .clone_url
+
+    # Add webhook
+    curl -s -X POST "$GITEA_URL/api/v1/repos/kumbula/$APP_NAME/hooks" \
+      -H "Authorization: token $GITEA_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "{\"type\":\"gitea\",\"active\":true,\"events\":[\"push\"],\"config\":{\"url\":\"$ENGINE_URL/webhook\",\"content_type\":\"json\"}}" > /dev/null
+
+    echo "App created. Deploy with:"
+    echo "   git remote add kumbula $GITEA_URL/kumbula/$APP_NAME.git"
+    echo "   git push kumbula main"
+    echo ""
+    echo "URL: http://$APP_NAME.$DOMAIN"
+    ;;
+
+  apps)
+    echo "Deployed apps:"
+    curl -s "$ENGINE_URL/apps" | jq -r 'to_entries[] | "  \(.value.status) \(.value.app_name)\t-> \(.value.url)"'
+    ;;
+
+  logs)
+    APP_NAME="${2:?Usage: kc logs <app-name>}"
+    docker logs -f "kumbula-app-$APP_NAME" 2>&1
+    ;;
+
+  destroy)
+    APP_NAME="${2:?Usage: kc destroy <app-name>}"
+    echo "Destroying $APP_NAME..."
+    docker stop "kumbula-app-$APP_NAME" 2>/dev/null && docker rm "kumbula-app-$APP_NAME" 2>/dev/null
+    echo "Removed"
+    ;;
+
+  help|*)
+    echo "KumbulaCloud CLI"
+    echo ""
+    echo "Commands:"
+    echo "  kc create <name>    Create a new app"
+    echo "  kc apps             List deployed apps"
+    echo "  kc logs <name>      Stream app logs"
+    echo "  kc destroy <name>   Remove an app"
+    ;;
+esac
