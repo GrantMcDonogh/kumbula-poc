@@ -14,6 +14,7 @@ type Project struct {
 	Status      string
 	URL         string
 	DatabaseURL sql.NullString
+	GithubURL   string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -23,9 +24,9 @@ func CreateProject(userID int, name, giteaRepo, url string) (*Project, error) {
 	err := DB.QueryRow(
 		`INSERT INTO projects (user_id, name, gitea_repo, url)
 		 VALUES ($1, $2, $3, $4)
-		 RETURNING id, user_id, name, gitea_repo, container_id, status, url, database_url, created_at, updated_at`,
+		 RETURNING id, user_id, name, gitea_repo, container_id, status, url, database_url, github_url, created_at, updated_at`,
 		userID, name, giteaRepo, url,
-	).Scan(&p.ID, &p.UserID, &p.Name, &p.GiteaRepo, &p.ContainerID, &p.Status, &p.URL, &p.DatabaseURL, &p.CreatedAt, &p.UpdatedAt)
+	).Scan(&p.ID, &p.UserID, &p.Name, &p.GiteaRepo, &p.ContainerID, &p.Status, &p.URL, &p.DatabaseURL, &p.GithubURL, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +35,7 @@ func CreateProject(userID int, name, giteaRepo, url string) (*Project, error) {
 
 func GetProjectsByUser(userID int) ([]*Project, error) {
 	rows, err := DB.Query(
-		`SELECT id, user_id, name, gitea_repo, container_id, status, url, database_url, created_at, updated_at
+		`SELECT id, user_id, name, gitea_repo, container_id, status, url, database_url, github_url, created_at, updated_at
 		 FROM projects WHERE user_id = $1 ORDER BY created_at DESC`, userID,
 	)
 	if err != nil {
@@ -45,7 +46,7 @@ func GetProjectsByUser(userID int) ([]*Project, error) {
 	var projects []*Project
 	for rows.Next() {
 		p := &Project{}
-		if err := rows.Scan(&p.ID, &p.UserID, &p.Name, &p.GiteaRepo, &p.ContainerID, &p.Status, &p.URL, &p.DatabaseURL, &p.CreatedAt, &p.UpdatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.UserID, &p.Name, &p.GiteaRepo, &p.ContainerID, &p.Status, &p.URL, &p.DatabaseURL, &p.GithubURL, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, err
 		}
 		projects = append(projects, p)
@@ -56,9 +57,9 @@ func GetProjectsByUser(userID int) ([]*Project, error) {
 func GetProjectByName(name string) (*Project, error) {
 	p := &Project{}
 	err := DB.QueryRow(
-		`SELECT id, user_id, name, gitea_repo, container_id, status, url, database_url, created_at, updated_at
+		`SELECT id, user_id, name, gitea_repo, container_id, status, url, database_url, github_url, created_at, updated_at
 		 FROM projects WHERE name = $1`, name,
-	).Scan(&p.ID, &p.UserID, &p.Name, &p.GiteaRepo, &p.ContainerID, &p.Status, &p.URL, &p.DatabaseURL, &p.CreatedAt, &p.UpdatedAt)
+	).Scan(&p.ID, &p.UserID, &p.Name, &p.GiteaRepo, &p.ContainerID, &p.Status, &p.URL, &p.DatabaseURL, &p.GithubURL, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +78,14 @@ func UpdateProjectDatabaseURL(projectID int, dbURL string) error {
 	_, err := DB.Exec(
 		`UPDATE projects SET database_url = $1, updated_at = now() WHERE id = $2`,
 		dbURL, projectID,
+	)
+	return err
+}
+
+func UpdateProjectGithubURL(projectID int, githubURL string) error {
+	_, err := DB.Exec(
+		`UPDATE projects SET github_url = $1, updated_at = now() WHERE id = $2`,
+		githubURL, projectID,
 	)
 	return err
 }
