@@ -25,12 +25,17 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=kumbula"
       - "--entrypoints.web.address=:80"
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      - "--providers.file.watch=true"
       - "--log.level=INFO"
     ports:
       - "80:80"
       - "8080:8080"   # Traefik dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./engine/traefik-dashboard.yml:/etc/traefik/dynamic.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - kumbula
     labels:

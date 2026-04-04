@@ -1,0 +1,12 @@
+http:
+  routers:
+    dashboard-app:
+      rule: "Host(`dashboard.kumbula.local`)"
+      service: dashboard-app
+      entryPoints:
+        - web
+  services:
+    dashboard-app:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:9000"
