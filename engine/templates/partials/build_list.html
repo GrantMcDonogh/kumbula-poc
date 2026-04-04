@@ -1,0 +1,64 @@
+{{define "build_list"}}
+{{if .Builds}}
+<table role="grid">
+    <thead>
+        <tr>
+            <th>Build #</th>
+            <th>Status</th>
+            <th>Commit</th>
+            <th>Started</th>
+            <th>Duration</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Builds}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td><span class="badge {{statusClass .Status}}">{{.Status}}</span></td>
+            <td>
+                {{if .CommitSHA}}
+                    <code>{{printf "%.7s" .CommitSHA}}</code>
+                {{else}}
+                    <em>n/a</em>
+                {{end}}
+            </td>
+            <td>
+                {{if .StartedAt.Valid}}
+                    {{.StartedAt.Time.Format "2006-01-02 15:04:05"}}
+                {{else}}
+                    -
+                {{end}}
+            </td>
+            <td>
+                {{if .FinishedAt.Valid}}
+                    {{.FinishedAt.Time.Sub .StartedAt.Time}}
+                {{else}}
+                    -
+                {{end}}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="5">
+                {{if eq .Status "building"}}
+                <div class="build-log"
+                     hx-ext="sse"
+                     sse-connect="/projects/{{$.Project.Name}}/builds/{{.ID}}/stream"
+                     sse-swap="log"
+                     hx-swap="beforeend">
+                    <pre><code>Building...</code></pre>
+                </div>
+                {{else}}
+                <details>
+                    <summary>Build log</summary>
+                    <pre><code>{{.Log}}</code></pre>
+                </details>
+                {{end}}
+            </td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{else}}
+<p>No builds yet. Push to your git remote to trigger a build.</p>
+{{end}}
+{{end}}

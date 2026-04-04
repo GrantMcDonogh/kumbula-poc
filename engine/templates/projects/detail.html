@@ -1,0 +1,48 @@
+{{define "content"}}
+<h2>{{.Project.Name}}</h2>
+<div class="tabs">
+    <a href="/projects/{{.Project.Name}}" class="{{if eq .Tab "overview"}}active{{end}}">Overview</a>
+    <a href="/projects/{{.Project.Name}}?tab=builds" class="{{if eq .Tab "builds"}}active{{end}}">Builds</a>
+    <a href="/projects/{{.Project.Name}}?tab=env" class="{{if eq .Tab "env"}}active{{end}}">Environment</a>
+    <a href="/projects/{{.Project.Name}}?tab=settings" class="{{if eq .Tab "settings"}}active{{end}}">Settings</a>
+</div>
+
+{{if eq .Tab "overview"}}
+<article>
+    <header>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="badge {{statusClass .Project.Status}}">{{.Project.Status}}</span>
+            <form method="POST" action="/projects/{{.Project.Name}}/redeploy" style="margin:0">
+                <input type="hidden" name="_csrf" value="{{.CSRF}}">
+                <button type="submit" class="outline btn-sm">Redeploy</button>
+            </form>
+        </div>
+    </header>
+
+    <dl>
+        <dt>URL</dt>
+        <dd><a href="{{.Project.URL}}" target="_blank">{{.Project.URL}}</a></dd>
+
+        <dt>Repository</dt>
+        <dd><code>{{.Project.GiteaRepo}}</code></dd>
+
+        <dt>Created</dt>
+        <dd>{{.Project.CreatedAt.Format "2006-01-02 15:04"}}</dd>
+    </dl>
+
+    <h4>Git remote setup</h4>
+    <pre><code>git remote add kumbula ssh://git@localhost:2222/{{.Project.GiteaRepo}}.git
+git push kumbula main</code></pre>
+</article>
+
+{{else if eq .Tab "builds"}}
+{{template "build_list" .}}
+
+{{else if eq .Tab "env"}}
+<p>Environment variables coming soon.</p>
+
+{{else if eq .Tab "settings"}}
+<p>Settings coming soon.</p>
+
+{{end}}
+{{end}}
