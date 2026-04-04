@@ -54,6 +54,8 @@ func main() {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
+	InitGitea()
+
 	http.HandleFunc("/webhook", handleWebhook)
 	http.HandleFunc("/apps", handleListApps)
 	http.HandleFunc("/health", handleHealth)
