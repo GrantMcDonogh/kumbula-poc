@@ -105,7 +105,8 @@ func main() {
 		handleDashboard(w, r)
 	})))
 	mux.Handle("/projects/", RequireAuth(RequireProjectOwner(http.HandlerFunc(routeProject))))
-	mux.Handle("/partials/project-cards", RequireAuth(http.HandlerFunc(handleProjectCardsPartial)))
+	mux.Handle("/partials/project-cards", RequireAuth(http.HandlerFunc(handleSidebarProjectsPartial)))
+	mux.Handle("/partials/sidebar-projects", RequireAuth(http.HandlerFunc(handleSidebarProjectsPartial)))
 
 	// Wrap the entire mux with session middleware
 	handler := SessionMiddleware(mux)

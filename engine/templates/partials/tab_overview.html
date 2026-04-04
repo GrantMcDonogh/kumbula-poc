@@ -1,0 +1,136 @@
+{{define "tab_overview"}}
+<div class="content-grid">
+    <div>
+        <!-- Deployment Overview -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Deployment Overview</span>
+                {{if eq .Project.Status "running"}}
+                <span class="card-badge teal">Live</span>
+                {{end}}
+            </div>
+
+            <div class="deploy-stats-row">
+                <div class="deploy-stat">
+                    <span class="deploy-stat-label">Status</span>
+                    <span class="deploy-stat-value {{if eq .Project.Status "running"}}teal{{else if eq .Project.Status "failed"}}red{{end}}">{{.Project.Status | upper}}</span>
+                </div>
+                <div class="deploy-stat">
+                    <span class="deploy-stat-label">Builds</span>
+                    <span class="deploy-stat-value">{{.BuildCount}}</span>
+                    <span class="deploy-stat-sub">Total builds</span>
+                </div>
+                <div class="deploy-stat">
+                    <span class="deploy-stat-label">Last Build</span>
+                    {{if .LastBuild}}
+                    <span class="deploy-stat-value amber">{{buildDuration .LastBuild}}</span>
+                    <span class="deploy-stat-sub">{{if .LastBuild.StartedAt.Valid}}{{timeAgo .LastBuild.StartedAt.Time}}{{end}}</span>
+                    {{else}}
+                    <span class="deploy-stat-value">&mdash;</span>
+                    <span class="deploy-stat-sub">No builds yet</span>
+                    {{end}}
+                </div>
+            </div>
+
+            {{if .LastBuild}}
+            <div style="font-size:10.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:8px;">Last Deployment</div>
+            <div class="last-build-row">
+                <div class="build-commit-dot"></div>
+                <div class="build-commit-info">
+                    <div class="build-commit-hash">{{shortSHA .LastBuild.CommitSHA}}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                    {{if .LastBuild.StartedAt.Valid}}
+                    <div class="build-time">{{.LastBuild.StartedAt.Time.Format "Jan 2, 15:04"}}</div>
+                    {{end}}
+                    <div class="build-duration-badge">{{buildDuration .LastBuild}}</div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
+        <!-- Git Remote Setup -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Git Remote Setup</span>
+                <span style="font-size:10.5px;color:var(--text-tertiary);">Push to deploy</span>
+            </div>
+
+            <div class="git-instructions">
+                <div class="git-step">
+                    <div class="git-step-label">
+                        <span class="step-num">1</span>
+                        Add the Kumbula remote
+                    </div>
+                    <div class="code-block">
+                        <code><span class="cmd">git</span> remote add kumbula <span class="url">http://{{.User.Username}}@gitea.kumbula.local/{{.Project.GiteaRepo}}.git</span></code>
+                        <button class="copy-btn" data-copy="git remote add kumbula http://{{.User.Username}}@gitea.kumbula.local/{{.Project.GiteaRepo}}.git">Copy</button>
+                    </div>
+                </div>
+
+                <div class="git-divider">
+                    <div class="git-divider-line"></div>
+                    <span class="git-divider-text">then</span>
+                    <div class="git-divider-line"></div>
+                </div>
+
+                <div class="git-step">
+                    <div class="git-step-label">
+                        <span class="step-num">2</span>
+                        Push your code to trigger a build
+                    </div>
+                    <div class="code-block">
+                        <code><span class="cmd">git</span> push kumbula main</code>
+                        <button class="copy-btn" data-copy="git push kumbula main">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="side-cards">
+        <!-- Project Info -->
+        <div class="card">
+            <div class="card-header" style="margin-bottom:12px;">
+                <span class="card-title">Project Info</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Status</span>
+                <span class="info-val accent">{{.Project.Status}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Repository</span>
+                <span class="info-val">{{.Project.GiteaRepo}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Created</span>
+                <span class="info-val">{{.Project.CreatedAt.Format "Jan 2, 2006"}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Live URL</span>
+                <a href="{{.Project.URL}}" target="_blank" style="font-size:11.5px;font-family:var(--font-mono);">{{.Project.Name}}.kumbula.local</a>
+            </div>
+        </div>
+
+        <!-- Environment Variables -->
+        <div class="card">
+            <div class="card-header" style="margin-bottom:12px;">
+                <span class="card-title">Environment Variables</span>
+                <span class="card-badge teal">{{.EnvVarCount}} vars</span>
+            </div>
+            {{if .EnvVarsPreview}}
+            {{range .EnvVarsPreview}}
+            <div class="env-item">
+                <span class="env-key">{{.Key}}</span>
+                <span class="env-val-mask">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
+            </div>
+            {{end}}
+            {{end}}
+            <div style="margin-top:12px;">
+                <a href="/projects/{{.Project.Name}}?tab=env" class="btn-sm ghost">Manage variables &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

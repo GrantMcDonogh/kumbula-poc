@@ -1,0 +1,22 @@
+{{define "sidebar_projects"}}
+{{if .SidebarProjects}}
+{{range .SidebarProjects}}
+<a href="/projects/{{.Name}}" class="project-item {{if eq .Name $.ActiveProject}}active{{end}}">
+    <span class="status-dot {{.Status}}"></span>
+    <div class="project-info">
+        <div class="project-name">{{.Name}}</div>
+        <div class="project-meta">
+            {{if eq .Status "building"}}Building&hellip;
+            {{else if eq .Status "running"}}Running
+            {{else if eq .Status "failed"}}Failed
+            {{else}}Idle
+            {{end}}
+        </div>
+    </div>
+    <span class="project-arrow">&rsaquo;</span>
+</a>
+{{end}}
+{{else}}
+<div class="sidebar-empty">No projects yet</div>
+{{end}}
+{{end}}

@@ -1,0 +1,19 @@
+{{define "tab_settings"}}
+<div class="card danger-card">
+    <div class="card-header">
+        <span class="card-title" style="color: var(--status-failed)">Danger Zone</span>
+    </div>
+    <p class="settings-warning">Destroying this project will permanently delete:</p>
+    <ul class="settings-delete-list">
+        <li>Docker container and image</li>
+        <li>PostgreSQL database and user</li>
+        <li>Gitea repository</li>
+        <li>All environment variables and build history</li>
+    </ul>
+    <form method="POST" action="/projects/{{.Project.Name}}/settings?action=destroy"
+          onsubmit="return confirm('Permanently destroy {{.Project.Name}}? This cannot be undone.')">
+        <input type="hidden" name="_csrf" value="{{.CSRF}}">
+        <button type="submit" class="btn-sm danger">Destroy {{.Project.Name}}</button>
+    </form>
+</div>
+{{end}}

@@ -1,0 +1,76 @@
+{{define "tab_builds"}}
+{{if .Builds}}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Build History</span>
+    </div>
+    <table class="builds-table">
+        <thead>
+            <tr>
+                <th>Build</th>
+                <th>Status</th>
+                <th>Commit</th>
+                <th>Started</th>
+                <th>Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Builds}}
+            <tr>
+                <td class="build-num">#{{.ID}}</td>
+                <td><span class="status-pill {{.Status}}"><span class="dot"></span>{{.Status}}</span></td>
+                <td class="mono">{{shortSHA .CommitSHA}}</td>
+                <td class="mono">
+                    {{if .StartedAt.Valid}}{{.StartedAt.Time.Format "Jan 2, 15:04"}}{{else}}&mdash;{{end}}
+                </td>
+                <td class="mono">{{buildDuration .}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{range .Builds}}
+{{if eq .Status "building"}}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Live Build Log &mdash; #{{.ID}}</span>
+        <span class="status-pill building"><span class="dot"></span>Building</span>
+    </div>
+    <div class="build-log"
+         hx-ext="sse"
+         sse-connect="/projects/{{$.Project.Name}}/builds/{{.ID}}/stream"
+         sse-swap="log"
+         hx-swap="beforeend">
+        <pre><code></code></pre>
+    </div>
+</div>
+{{end}}
+{{end}}
+
+{{range .Builds}}
+{{if ne .Status "building"}}
+{{if .Log}}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Build Log &mdash; #{{.ID}}</span>
+        <span class="status-pill {{.Status}}"><span class="dot"></span>{{.Status}}</span>
+    </div>
+    <div class="build-log">
+        <pre><code>{{.Log}}</code></pre>
+    </div>
+</div>
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+
+{{else}}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Build History</span>
+    </div>
+    <p style="color:var(--text-tertiary);font-size:13px;">No builds yet. Push to your git remote to trigger a build.</p>
+</div>
+{{end}}
+{{end}}

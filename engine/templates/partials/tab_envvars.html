@@ -1,0 +1,64 @@
+{{define "tab_envvars"}}
+<div id="envvar-section">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Environment Variables</span>
+            <span class="card-badge teal">{{len .EnvVars}} vars</span>
+        </div>
+        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">Changes take effect on the next deploy.</p>
+
+        {{if .Project.DatabaseURL.Valid}}
+        <div class="env-item managed">
+            <span class="env-key">DATABASE_URL</span>
+            <span class="env-val-mask">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
+            <span class="env-managed-badge">Auto-managed</span>
+        </div>
+        {{end}}
+
+        <div class="env-item managed">
+            <span class="env-key">PORT</span>
+            <span class="env-val-text">3000</span>
+            <span class="env-managed-badge">System</span>
+        </div>
+        <div class="env-item managed">
+            <span class="env-key">APP_NAME</span>
+            <span class="env-val-text">{{.Project.Name}}</span>
+            <span class="env-managed-badge">System</span>
+        </div>
+        <div class="env-item managed">
+            <span class="env-key">APP_URL</span>
+            <span class="env-val-text">{{.Project.URL}}</span>
+            <span class="env-managed-badge">System</span>
+        </div>
+
+        {{range .EnvVars}}
+        <div class="env-item" id="envvar-{{.ID}}">
+            <span class="env-key">{{.Key}}</span>
+            <span class="env-val-text" data-value="{{.Value}}">{{.Value}}</span>
+            <button class="btn-delete"
+                    hx-delete="/projects/{{$.Project.Name}}/env?id={{.ID}}"
+                    hx-headers='{"X-CSRF-Token": "{{$.CSRF}}"}'
+                    hx-target="#envvar-section"
+                    hx-swap="outerHTML"
+                    hx-confirm="Delete {{.Key}}?">&times;</button>
+        </div>
+        {{end}}
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Add Variable</span>
+        </div>
+        <form hx-post="/projects/{{.Project.Name}}/env"
+              hx-headers='{"X-CSRF-Token": "{{.CSRF}}"}'
+              hx-target="#envvar-section"
+              hx-swap="outerHTML">
+            <div class="env-add-row">
+                <input type="text" name="key" placeholder="KEY" required style="text-transform:uppercase;">
+                <input type="text" name="value" placeholder="value" required>
+                <button type="submit" class="btn-sm primary">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}

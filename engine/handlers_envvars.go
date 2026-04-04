@@ -76,5 +76,5 @@ func handleEnvVars(w http.ResponseWriter, r *http.Request) {
 		"Project": project,
 		"EnvVars": vars,
 	}
-	RenderPartial(w, r, "envvar_form", data)
+	RenderPartial(w, r, "tab_envvars", data)
 }

@@ -1,68 +1,47 @@
 {{define "content"}}
-<h2>{{.Project.Name}}</h2>
-<div class="tabs">
-    <a href="/projects/{{.Project.Name}}" class="{{if eq .Tab "overview"}}active{{end}}">Overview</a>
-    <a href="/projects/{{.Project.Name}}?tab=builds" class="{{if eq .Tab "builds"}}active{{end}}">Builds</a>
-    <a href="/projects/{{.Project.Name}}?tab=env" class="{{if eq .Tab "env"}}active{{end}}">Environment</a>
-    <a href="/projects/{{.Project.Name}}?tab=settings" class="{{if eq .Tab "settings"}}active{{end}}">Settings</a>
+<div class="topbar">
+    <div class="topbar-breadcrumb">
+        <a href="/" style="color: var(--text-tertiary); text-decoration: none;">Projects</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">{{.Project.Name}}</span>
+    </div>
+    <div class="topbar-actions">
+        <div class="status-pill {{.Project.Status}}">
+            <span class="dot"></span>
+            {{.Project.Status | upper}}
+        </div>
+        <a href="/projects/{{.Project.Name}}?tab=builds" class="topbar-btn ghost">Builds</a>
+        <form method="POST" action="/projects/{{.Project.Name}}/redeploy" style="margin:0; display:inline;">
+            <input type="hidden" name="_csrf" value="{{.CSRF}}">
+            <button type="submit" class="topbar-btn primary">&#8593; Deploy</button>
+        </form>
+    </div>
 </div>
 
-{{if eq .Tab "overview"}}
-
-<div class="status-bar">
-    <span class="status-badge {{statusClass .Project.Status}}">{{.Project.Status}}</span>
-    <a href="{{.Project.URL}}" target="_blank">{{.Project.URL}}</a>
-    <form method="POST" action="/projects/{{.Project.Name}}/redeploy" style="margin:0"
-          hx-post="/projects/{{.Project.Name}}/redeploy"
-          hx-headers='{"X-CSRF-Token": "{{.CSRF}}"}'
-          hx-confirm="Redeploy {{.Project.Name}}?">
-        <input type="hidden" name="_csrf" value="{{.CSRF}}">
-        <button type="submit" class="outline btn-sm">Redeploy</button>
-    </form>
+<div class="project-header">
+    <div class="project-title">{{.Project.Name}}</div>
+    <div class="project-url">
+        <span class="url-icon">&#8599;</span>
+        <a href="{{.Project.URL}}" target="_blank" class="project-url-text">{{.Project.URL}}</a>
+    </div>
 </div>
 
-<div class="info-grid">
-    <article>
-        <dl>
-            <dt>URL</dt>
-            <dd><a href="{{.Project.URL}}" target="_blank">{{.Project.URL}}</a></dd>
-        </dl>
-    </article>
-    <article>
-        <dl>
-            <dt>Repository</dt>
-            <dd><code>{{.Project.GiteaRepo}}</code></dd>
-        </dl>
-    </article>
-    <article>
-        <dl>
-            <dt>Status</dt>
-            <dd><span class="status-badge {{statusClass .Project.Status}}">{{.Project.Status}}</span></dd>
-        </dl>
-    </article>
-    <article>
-        <dl>
-            <dt>Created</dt>
-            <dd>{{.Project.CreatedAt.Format "2006-01-02 15:04"}}</dd>
-        </dl>
-    </article>
+<div class="tabs-bar">
+    <a href="/projects/{{.Project.Name}}" class="tab {{if eq .Tab "overview"}}active{{end}}">Overview</a>
+    <a href="/projects/{{.Project.Name}}?tab=builds" class="tab {{if eq .Tab "builds"}}active{{end}}">Builds</a>
+    <a href="/projects/{{.Project.Name}}?tab=env" class="tab {{if eq .Tab "env"}}active{{end}}">Environment</a>
+    <a href="/projects/{{.Project.Name}}?tab=settings" class="tab {{if eq .Tab "settings"}}active{{end}}">Settings</a>
 </div>
 
-<details>
-    <summary>Git remote setup</summary>
-    <pre><code>git remote add kumbula http://{{.User.Username}}@gitea.kumbula.local/{{.Project.GiteaRepo}}.git
-git push kumbula main</code></pre>
-    <p><small>When prompted for a password, use your Gitea password (shown once at signup).</small></p>
-</details>
-
-{{else if eq .Tab "builds"}}
-{{template "build_list" .}}
-
-{{else if eq .Tab "env"}}
-{{template "envvar_form" .}}
-
-{{else if eq .Tab "settings"}}
-{{template "settings_form" .}}
-
-{{end}}
+<div class="content">
+    {{if eq .Tab "overview"}}
+    {{template "tab_overview" .}}
+    {{else if eq .Tab "builds"}}
+    {{template "tab_builds" .}}
+    {{else if eq .Tab "env"}}
+    {{template "tab_envvars" .}}
+    {{else if eq .Tab "settings"}}
+    {{template "tab_settings" .}}
+    {{end}}
+</div>
 {{end}}

@@ -12,12 +12,33 @@ func handleProjectDetail(w http.ResponseWriter, r *http.Request) {
 		tab = "overview"
 	}
 	data := map[string]interface{}{
-		"Title":   project.Name,
-		"Content": "detail",
-		"Project": project,
-		"Tab":     tab,
+		"Title":         project.Name,
+		"Project":       project,
+		"Tab":           tab,
+		"ActiveProject": project.Name,
 	}
 	switch tab {
+	case "overview":
+		builds, err := GetBuildsByProject(project.ID)
+		if err != nil {
+			log.Printf("GetBuildsByProject error: %v", err)
+		}
+		envVars, err := GetEnvVarsByProject(project.ID)
+		if err != nil {
+			log.Printf("GetEnvVarsByProject error: %v", err)
+		}
+		data["Builds"] = builds
+		data["BuildCount"] = len(builds)
+		data["EnvVarCount"] = len(envVars)
+		// Preview first 3 env vars
+		if len(envVars) > 3 {
+			data["EnvVarsPreview"] = envVars[:3]
+		} else {
+			data["EnvVarsPreview"] = envVars
+		}
+		if len(builds) > 0 {
+			data["LastBuild"] = builds[0]
+		}
 	case "builds":
 		builds, err := GetBuildsByProject(project.ID)
 		if err != nil {
@@ -31,5 +52,5 @@ func handleProjectDetail(w http.ResponseWriter, r *http.Request) {
 		}
 		data["EnvVars"] = vars
 	}
-	RenderPage(w, r, "layout", data)
+	RenderShell(w, r, "detail", data)
 }

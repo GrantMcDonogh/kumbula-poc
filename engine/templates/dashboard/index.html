@@ -1,12 +1,64 @@
 {{define "content"}}
-<div class="page-header">
-    <h2>Your Projects</h2>
-    <a href="/projects/new" role="button">New Project</a>
+<div class="topbar">
+    <div class="topbar-breadcrumb">
+        <span class="crumb-current">Dashboard</span>
+    </div>
+    <div class="topbar-actions">
+        <a href="/projects/new" class="topbar-btn primary">+ New Project</a>
+    </div>
 </div>
-<div id="project-cards"
-     hx-get="/partials/project-cards"
-     hx-trigger="every 5s"
-     hx-swap="innerHTML">
-    {{template "project_cards" .}}
+
+<div class="content">
+    {{if .Projects}}
+    <div class="dashboard-stats">
+        <div class="dashboard-stat-card">
+            <div class="dashboard-stat-num">{{len .Projects}}</div>
+            <div class="dashboard-stat-label">Total Projects</div>
+        </div>
+        <div class="dashboard-stat-card">
+            <div class="dashboard-stat-num teal">{{.RunningCount}}</div>
+            <div class="dashboard-stat-label">Running</div>
+        </div>
+        <div class="dashboard-stat-card">
+            <div class="dashboard-stat-num red">{{.FailedCount}}</div>
+            <div class="dashboard-stat-label">Failed</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Your Projects</span>
+        </div>
+        <table class="builds-table">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Status</th>
+                    <th>URL</th>
+                    <th>Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Projects}}
+                <tr style="cursor:pointer;" onclick="window.location='/projects/{{.Name}}'">
+                    <td class="build-num" style="font-family:var(--font-mono);">{{.Name}}</td>
+                    <td><span class="status-pill {{.Status}}"><span class="dot"></span>{{.Status}}</span></td>
+                    <td><a href="{{.URL}}" target="_blank" style="font-size:11px;font-family:var(--font-mono);">{{.URL}}</a></td>
+                    <td class="mono">{{timeAgo .UpdatedAt}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+    {{else}}
+    <div class="dashboard-welcome">
+        <h2>Welcome to KumbulaCloud</h2>
+        <p>Create your first project to get started. Push code via git and get a running app with a database and URL.</p>
+        <a href="/projects/new" class="btn-new-project">
+            <span class="plus-icon">+</span>
+            Create Your First Project
+        </a>
+    </div>
+    {{end}}
 </div>
 {{end}}

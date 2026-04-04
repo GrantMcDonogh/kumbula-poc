@@ -36,9 +36,7 @@ func handleLoginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	RenderPage(w, r, "", map[string]interface{}{
-		"Content": "login",
-	})
+	RenderAuth(w, r, "login", nil)
 }
 
 // handleLogin processes the login form submission.
@@ -48,9 +46,8 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := GetUserByUsername(username)
 	if err != nil || !CheckPassword(user, password) {
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "login",
-			"Error":   "Invalid username or password.",
+		RenderAuth(w, r, "login", map[string]interface{}{
+			"Error": "Invalid username or password.",
 		})
 		return
 	}
@@ -79,9 +76,7 @@ func handleSignupPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	RenderPage(w, r, "", map[string]interface{}{
-		"Content": "signup",
-	})
+	RenderAuth(w, r, "signup", nil)
 }
 
 // handleSignup processes the signup form submission.
@@ -92,8 +87,7 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 
 	// Validate username
 	if err := ValidateProjectName(username); err != nil {
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "signup",
+		RenderAuth(w, r, "signup", map[string]interface{}{
 			"Error":   err.Error(),
 		})
 		return
@@ -101,8 +95,7 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 
 	// Validate password
 	if len(password) < 8 {
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "signup",
+		RenderAuth(w, r, "signup", map[string]interface{}{
 			"Error":   "Password must be at least 8 characters.",
 		})
 		return
@@ -115,8 +108,7 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 	user, err := CreateUser(username, email, password, giteaPass)
 	if err != nil {
 		log.Printf("auth: failed to create user %s: %v", username, err)
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "signup",
+		RenderAuth(w, r, "signup", map[string]interface{}{
 			"Error":   "Username or email already taken.",
 		})
 		return
@@ -127,8 +119,7 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 		log.Printf("auth: failed to create Gitea user %s: %v", username, err)
 		// Rollback: delete the KumbulaCloud user
 		DB.Exec(`DELETE FROM users WHERE id = $1`, user.ID)
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "signup",
+		RenderAuth(w, r, "signup", map[string]interface{}{
 			"Error":   "Failed to provision account. Please try again.",
 		})
 		return
@@ -140,8 +131,7 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 		log.Printf("auth: failed to create Gitea token for %s: %v", username, err)
 		// Rollback: delete the KumbulaCloud user (Gitea user is orphaned but non-critical)
 		DB.Exec(`DELETE FROM users WHERE id = $1`, user.ID)
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "signup",
+		RenderAuth(w, r, "signup", map[string]interface{}{
 			"Error":   "Failed to provision account. Please try again.",
 		})
 		return

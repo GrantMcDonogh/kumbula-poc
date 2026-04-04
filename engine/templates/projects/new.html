@@ -1,20 +1,28 @@
 {{define "content"}}
-<article class="auth-card">
-    <header>
+<div class="topbar">
+    <div class="topbar-breadcrumb">
+        <a href="/" style="color: var(--text-tertiary); text-decoration: none;">Projects</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">New Project</span>
+    </div>
+    <div class="topbar-actions"></div>
+</div>
+
+<div class="content">
+    <div class="new-project-form">
         <h2>Create a new project</h2>
-    </header>
-    {{if .Error}}
-    <p class="error-msg">{{.Error}}</p>
-    {{end}}
-    <form method="POST" action="/projects/new">
-        <input type="hidden" name="_csrf" value="{{.CSRF}}">
-        <label for="name">Project name</label>
-        <input type="text" id="name" name="name" required autofocus
-               pattern="[a-z][a-z0-9-]{1,48}[a-z0-9]"
-               title="Lowercase letters, numbers, hyphens. 3-50 chars."
-               placeholder="my-awesome-app">
-        <small>This becomes your app URL: <code>http://&lt;name&gt;.kumbula.local</code></small>
-        <button type="submit">Create project</button>
-    </form>
-</article>
+        <p class="form-hint">Name your project. This becomes your URL: <code>http://&lt;name&gt;.kumbula.local</code></p>
+        {{if .Error}}
+        <div class="error-msg">{{.Error}}</div>
+        {{end}}
+        <form method="POST" action="/projects/new">
+            <input type="hidden" name="_csrf" value="{{.CSRF}}">
+            <input type="text" name="name" required autofocus
+                   pattern="[a-z][a-z0-9-]{1,48}[a-z0-9]"
+                   title="Lowercase letters, numbers, hyphens. 3-50 chars."
+                   placeholder="my-awesome-app">
+            <button type="submit">Create project</button>
+        </form>
+    </div>
+</div>
 {{end}}

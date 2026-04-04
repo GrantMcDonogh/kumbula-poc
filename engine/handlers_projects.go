@@ -21,8 +21,8 @@ func getHostIP() string {
 
 // handleNewProjectPage renders the "Create a new project" form.
 func handleNewProjectPage(w http.ResponseWriter, r *http.Request) {
-	RenderPage(w, r, "", map[string]interface{}{
-		"Content": "new_project",
+	RenderShell(w, r, "new_project", map[string]interface{}{
+		"Title": "New Project",
 	})
 }
 
@@ -41,8 +41,8 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 
 	// Validate project name
 	if err := ValidateProjectName(name); err != nil {
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "new_project",
+		RenderShell(w, r, "new_project", map[string]interface{}{
+			"Title": "New Project",
 			"Error":   err.Error(),
 		})
 		return
@@ -50,8 +50,8 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 
 	// Check uniqueness
 	if _, err := GetProjectByName(name); err == nil {
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "new_project",
+		RenderShell(w, r, "new_project", map[string]interface{}{
+			"Title": "New Project",
 			"Error":   fmt.Sprintf("A project named %q already exists.", name),
 		})
 		return
@@ -67,8 +67,8 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if freshUser.GiteaToken == "" {
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "new_project",
+		RenderShell(w, r, "new_project", map[string]interface{}{
+			"Title": "New Project",
 			"Error":   "Your account is missing a Gitea token. Please contact support.",
 		})
 		return
@@ -78,8 +78,8 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 	_, err = GiteaCreateRepo(freshUser.GiteaToken, name)
 	if err != nil {
 		log.Printf("projects: failed to create Gitea repo %s for user %s: %v", name, freshUser.Username, err)
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "new_project",
+		RenderShell(w, r, "new_project", map[string]interface{}{
+			"Title": "New Project",
 			"Error":   "Failed to create repository. Please try again.",
 		})
 		return
@@ -102,8 +102,8 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 	_, err = CreateProject(freshUser.ID, name, giteaRepo, appURL)
 	if err != nil {
 		log.Printf("projects: failed to create project record %s: %v", name, err)
-		RenderPage(w, r, "", map[string]interface{}{
-			"Content": "new_project",
+		RenderShell(w, r, "new_project", map[string]interface{}{
+			"Title": "New Project",
 			"Error":   "Failed to save project. Please try again.",
 		})
 		return

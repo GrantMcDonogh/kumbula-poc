@@ -1,0 +1,73 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{if .Title}}{{.Title}} — {{end}}KumbulaCloud</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/htmx.min.js"></script>
+    <script src="/static/sse.js"></script>
+    <script src="/static/clipboard.js" defer></script>
+</head>
+<body>
+
+<div class="loading-bar"></div>
+
+<div class="shell">
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-mark">
+                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 2h2v5l4-5h2.5L7 8l4.5 6H9L5.5 9.5 5 10v4H3V2z"/>
+                </svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">KumbulaCloud</span>
+                <span class="brand-tagline">Platform as a Service</span>
+            </div>
+        </div>
+
+        <div class="sidebar-new-project">
+            <a href="/projects/new" class="btn-new-project">
+                <span class="plus-icon">+</span>
+                New Project
+            </a>
+        </div>
+
+        <div class="sidebar-section-label">Projects</div>
+        <div class="sidebar-projects"
+             hx-get="/partials/sidebar-projects{{if .ActiveProject}}?active={{.ActiveProject}}{{end}}"
+             hx-trigger="every 5s"
+             hx-swap="innerHTML">
+            {{template "sidebar_projects" .}}
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-footer">
+            <div class="user-avatar">{{initials .User.Username}}</div>
+            <div class="user-info">
+                <div class="user-name">{{.User.Username}}</div>
+                <div class="user-plan">{{len .SidebarProjects}} project{{if ne (len .SidebarProjects) 1}}s{{end}}</div>
+            </div>
+            <form method="POST" action="/logout" style="margin:0">
+                <input type="hidden" name="_csrf" value="{{.CSRF}}">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+        {{template "content" .}}
+    </main>
+
+</div>
+
+</body>
+</html>
+{{end}}
