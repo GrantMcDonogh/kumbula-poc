@@ -9,6 +9,8 @@ volumes:
   gitea_data:
   postgres_data:
   traefik_certs:
+  redis_data:
+  minio_data:
 
 services:
   # ─── Reverse Proxy ───────────────────────────────────────
@@ -34,8 +36,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./engine/traefik-dashboard.yml:/etc/traefik/dynamic.yml:ro
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     networks:
       - kumbula
     labels:
@@ -63,6 +63,30 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.gitea.rule=Host(`gitea.kumbula.local`)"
       - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+
+  # ─── Redis ───────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: kumbula-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - kumbula
+
+  # ─── MinIO (S3-compatible storage) ──────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: kumbula-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - kumbula
 
   # ─── Shared PostgreSQL ──────────────────────────────────
   postgres:

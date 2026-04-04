@@ -75,7 +75,7 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create Gitea repo
-	cloneURL, err := GiteaCreateRepo(freshUser.GiteaToken, name)
+	_, err = GiteaCreateRepo(freshUser.GiteaToken, name)
 	if err != nil {
 		log.Printf("projects: failed to create Gitea repo %s for user %s: %v", name, freshUser.Username, err)
 		RenderPage(w, r, "", map[string]interface{}{
@@ -98,7 +98,8 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 
 	// Create project record
 	appURL := fmt.Sprintf("http://%s.%s", name, DEPLOY_DOMAIN)
-	_, err = CreateProject(freshUser.ID, name, cloneURL, appURL)
+	giteaRepo := fmt.Sprintf("%s/%s", freshUser.Username, name)
+	_, err = CreateProject(freshUser.ID, name, giteaRepo, appURL)
 	if err != nil {
 		log.Printf("projects: failed to create project record %s: %v", name, err)
 		RenderPage(w, r, "", map[string]interface{}{

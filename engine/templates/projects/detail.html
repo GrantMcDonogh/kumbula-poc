@@ -31,8 +31,9 @@
     </dl>
 
     <h4>Git remote setup</h4>
-    <pre><code>git remote add kumbula ssh://git@localhost:2222/{{.Project.GiteaRepo}}.git
+    <pre><code>git remote add kumbula http://{{.User.Username}}@gitea.kumbula.local/{{.Project.GiteaRepo}}.git
 git push kumbula main</code></pre>
+    <p><small>When prompted for a password, use your Gitea password (shown once at signup).</small></p>
 </article>
 
 {{else if eq .Tab "builds"}}

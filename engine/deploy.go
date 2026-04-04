@@ -207,7 +207,7 @@ func provisionDatabase(appName string) (string, error) {
 	return dbURL, nil
 }
 
-func buildImage(appName, contextDir, imageName string) error {
+func buildImage(appName, contextDir, imageName string, buildArgs ...map[string]*string) error {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -225,18 +225,24 @@ func buildImage(appName, contextDir, imageName string) error {
 		return err
 	}
 
-	resp, err := cli.ImageBuild(ctx, tarReader, types.ImageBuildOptions{
+	opts := types.ImageBuildOptions{
 		Tags:       []string{imageName},
 		Dockerfile: "Dockerfile",
 		Remove:     true,
-	})
+	}
+	if len(buildArgs) > 0 && buildArgs[0] != nil {
+		opts.BuildArgs = buildArgs[0]
+	}
+
+	resp, err := cli.ImageBuild(ctx, tarReader, opts)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	// Stream build output
+	// Stream build output (increase buffer for large npm install lines)
 	scanner := bufio.NewScanner(resp.Body)
+	scanner.Buffer(make([]byte, 0, 1024*1024), 1024*1024)
 	for scanner.Scan() {
 		var line map[string]interface{}
 		json.Unmarshal(scanner.Bytes(), &line)
@@ -400,7 +406,7 @@ func deployWithBuild(project *Project, build *Build, cloneURL string) {
 
 	// Step 3: Provision database if not already done
 	dbURL := ""
-	if project.DatabaseURL.Valid {
+	if project.DatabaseURL.Valid && project.DatabaseURL.String != "" {
 		dbURL = project.DatabaseURL.String
 		logLine("Using existing database.")
 	} else {
@@ -416,10 +422,14 @@ func deployWithBuild(project *Project, build *Build, cloneURL string) {
 		}
 	}
 
-	// Step 4: Build Docker image
+	// Step 4: Build Docker image (pass app URL as build arg for Next.js etc.)
 	logLine("Building Docker image...")
 	imageName := fmt.Sprintf("kumbula/%s:latest", project.Name)
-	if err := buildImage(project.Name, cloneDir, imageName); err != nil {
+	appURL := project.URL
+	buildArgs := map[string]*string{
+		"NEXT_PUBLIC_APP_URL": &appURL,
+	}
+	if err := buildImage(project.Name, cloneDir, imageName, buildArgs); err != nil {
 		fail(fmt.Sprintf("Image build failed: %s", err))
 		return
 	}
