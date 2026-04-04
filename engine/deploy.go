@@ -360,3 +360,154 @@ func generatePassword(length int) string {
 	}
 	return string(b)
 }
+
+// deployWithBuild is a DB-backed deploy that logs to a Build record and broadcasts via SSE.
+func deployWithBuild(project *Project, build *Build, cloneURL string) {
+	defer broadcaster.Finish(build.ID)
+
+	logLine := func(msg string) {
+		line := msg + "\n"
+		AppendBuildLog(build.ID, line)
+		broadcaster.Broadcast(build.ID, msg)
+		log.Printf("  [%s] %s", project.Name, msg)
+	}
+
+	fail := func(msg string) {
+		logLine("ERROR: " + msg)
+		FinishBuild(build.ID, "failed")
+		UpdateProjectStatus(project.ID, "failed", "")
+	}
+
+	// Step 1: Clone
+	logLine("Cloning repository...")
+	cloneDir := filepath.Join(CLONE_BASE, project.Name)
+	os.RemoveAll(cloneDir)
+
+	cmd := exec.Command("git", "clone", "--depth=1", cloneURL, cloneDir)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		fail(fmt.Sprintf("Clone failed: %s\n%s", err, string(out)))
+		return
+	}
+	logLine("Clone complete.")
+
+	// Step 2: Detect language and generate Dockerfile
+	logLine("Detecting language...")
+	if err := ensureDockerfile(project.Name, cloneDir); err != nil {
+		fail(fmt.Sprintf("Dockerfile generation failed: %s", err))
+		return
+	}
+	logLine("Dockerfile ready.")
+
+	// Step 3: Provision database if not already done
+	dbURL := ""
+	if project.DatabaseURL.Valid {
+		dbURL = project.DatabaseURL.String
+		logLine("Using existing database.")
+	} else {
+		logLine("Provisioning database...")
+		var err error
+		dbURL, err = provisionDatabase(project.Name)
+		if err != nil {
+			logLine(fmt.Sprintf("Database provisioning failed (continuing): %s", err))
+			dbURL = ""
+		} else {
+			UpdateProjectDatabaseURL(project.ID, dbURL)
+			logLine("Database ready.")
+		}
+	}
+
+	// Step 4: Build Docker image
+	logLine("Building Docker image...")
+	imageName := fmt.Sprintf("kumbula/%s:latest", project.Name)
+	if err := buildImage(project.Name, cloneDir, imageName); err != nil {
+		fail(fmt.Sprintf("Image build failed: %s", err))
+		return
+	}
+	logLine("Image built successfully.")
+
+	// Step 5: Stop old container
+	logLine("Stopping old container...")
+	stopContainer(project.Name)
+
+	// Step 6: Load env vars
+	envVars, err := GetEnvVarsByProject(project.ID)
+	if err != nil {
+		logLine(fmt.Sprintf("Warning: failed to load env vars: %s", err))
+		envVars = nil
+	}
+
+	// Step 7: Start new container with env vars
+	logLine("Starting new container...")
+	containerID, err := runContainerWithEnv(project.Name, imageName, dbURL, envVars)
+	if err != nil {
+		fail(fmt.Sprintf("Container start failed: %s", err))
+		return
+	}
+
+	// Success
+	logLine(fmt.Sprintf("Deployed successfully. Container: %s", containerID[:12]))
+	FinishBuild(build.ID, "success")
+	UpdateProjectStatus(project.ID, "running", containerID[:12])
+}
+
+// runContainerWithEnv is like runContainer but also injects user-defined env vars.
+func runContainerWithEnv(appName, imageName, dbURL string, envVars []*EnvVar) (string, error) {
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return "", err
+	}
+	defer cli.Close()
+
+	containerName := fmt.Sprintf("kumbula-app-%s", appName)
+	hostname := fmt.Sprintf("%s.%s", appName, DEPLOY_DOMAIN)
+
+	env := []string{
+		"PORT=3000",
+		fmt.Sprintf("APP_NAME=%s", appName),
+		fmt.Sprintf("APP_URL=http://%s", hostname),
+	}
+	if dbURL != "" {
+		env = append(env, fmt.Sprintf("DATABASE_URL=%s", dbURL))
+	}
+
+	// Inject user-defined env vars
+	for _, v := range envVars {
+		env = append(env, fmt.Sprintf("%s=%s", v.Key, v.Value))
+	}
+
+	labels := map[string]string{
+		"traefik.enable": "true",
+		fmt.Sprintf("traefik.http.routers.%s.rule", appName):                     fmt.Sprintf("Host(`%s`)", hostname),
+		fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", appName): "3000",
+		"kumbula.managed": "true",
+		"kumbula.app":     appName,
+	}
+
+	resp, err := cli.ContainerCreate(ctx,
+		&container.Config{
+			Image:  imageName,
+			Env:    env,
+			Labels: labels,
+		},
+		&container.HostConfig{
+			RestartPolicy: container.RestartPolicy{Name: "unless-stopped"},
+		},
+		&network.NetworkingConfig{
+			EndpointsConfig: map[string]*network.EndpointSettings{
+				NETWORK_NAME: {},
+			},
+		},
+		nil,
+		containerName,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
+		return "", err
+	}
+
+	return resp.ID, nil
+}
