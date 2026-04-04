@@ -1,0 +1,24 @@
+{{define "project_cards"}}
+{{if .Projects}}
+<div class="project-grid">
+    {{range .Projects}}
+    <article class="project-card">
+        <header>
+            <a href="/projects/{{.Name}}"><strong>{{.Name}}</strong></a>
+            <span class="{{.Status | statusClass}}">
+                <span class="status-badge">{{.Status}}</span>
+            </span>
+        </header>
+        <p><a href="{{.URL}}" target="_blank">{{.URL}}</a></p>
+        <footer>
+            <small>Updated {{.UpdatedAt.Format "Jan 02, 15:04"}}</small>
+        </footer>
+    </article>
+    {{end}}
+</div>
+{{else}}
+<article>
+    <p>No projects yet. <a href="/projects/new">Create your first project</a> to get started.</p>
+</article>
+{{end}}
+{{end}}

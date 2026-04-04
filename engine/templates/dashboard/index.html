@@ -1,0 +1,12 @@
+{{define "content"}}
+<div class="page-header">
+    <h2>Your Projects</h2>
+    <a href="/projects/new" role="button">New Project</a>
+</div>
+<div id="project-cards"
+     hx-get="/partials/project-cards"
+     hx-trigger="every 5s"
+     hx-swap="innerHTML">
+    {{template "project_cards" .}}
+</div>
+{{end}}
