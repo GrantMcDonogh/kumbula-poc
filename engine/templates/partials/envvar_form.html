@@ -1,40 +1,134 @@
 {{define "envvar_form"}}
 <div id="envvar-section">
     <h4>Environment Variables</h4>
-    <p><small>Changes take effect on the next deploy. <code>DATABASE_URL</code> is managed automatically.</small></p>
+    <p><small>Changes take effect on the next deploy. System variables are managed automatically.</small></p>
 
-    {{if .Project.DatabaseURL.Valid}}
-    <div class="envvar-row">
-        <input class="envvar-key" type="text" value="DATABASE_URL" disabled>
-        <input class="envvar-value" type="text" value="(managed by KumbulaCloud)" disabled>
-        <span></span>
-    </div>
-    {{end}}
+    <table class="env-table">
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Value</th>
+                <th style="text-align:right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{/* System variables */}}
+            {{if .Project.DatabaseURL.Valid}}
+            <tr class="env-system">
+                <td><span class="env-key">DATABASE_URL</span></td>
+                <td><span class="env-value">(managed)</span></td>
+                <td></td>
+            </tr>
+            {{end}}
+            <tr class="env-system">
+                <td><span class="env-key">PORT</span></td>
+                <td><span class="env-value">3000</span></td>
+                <td></td>
+            </tr>
+            <tr class="env-system">
+                <td><span class="env-key">APP_NAME</span></td>
+                <td><span class="env-value">{{.Project.Name}}</span></td>
+                <td></td>
+            </tr>
+            <tr class="env-system">
+                <td><span class="env-key">APP_URL</span></td>
+                <td><span class="env-value">{{.Project.URL}}</span></td>
+                <td></td>
+            </tr>
 
-    {{range .EnvVars}}
-    <div class="envvar-row" id="envvar-{{.ID}}">
-        <input class="envvar-key" type="text" value="{{.Key}}" disabled>
-        <input class="envvar-value" type="text" value="{{.Value}}" disabled>
-        <form method="POST" action="/projects/{{$.Project.Name}}/env?_method=DELETE&id={{.ID}}"
-              hx-delete="/projects/{{$.Project.Name}}/env?id={{.ID}}"
-              hx-target="#envvar-section"
-              hx-swap="outerHTML"
-              hx-headers='{"X-CSRF-Token": "{{$.CSRF}}"}'>
-            <button type="submit" class="outline secondary btn-sm">Remove</button>
-        </form>
-    </div>
-    {{end}}
+            {{/* User variables */}}
+            {{range .EnvVars}}
+            <tr id="envvar-{{.ID}}">
+                <td><span class="env-key">{{.Key}}</span></td>
+                <td class="env-value-td">
+                    <span class="env-value env-value-text" data-value="{{.Value}}">{{.Value}}</span>
+                    <button type="button" class="toggle-mask" onclick="toggleMask(this)" aria-label="Toggle visibility">&#x1f512;</button>
+                </td>
+                <td class="env-actions">
+                    <button type="button" class="btn-sm outline" onclick="startEdit(this, '{{.ID}}', '{{.Key}}', this.closest('tr').querySelector('.env-value-text').getAttribute('data-value'), '{{$.Project.Name}}', '{{$.CSRF}}')">Edit</button>
+                    <form method="POST" action="/projects/{{$.Project.Name}}/env?_method=DELETE&id={{.ID}}"
+                          hx-delete="/projects/{{$.Project.Name}}/env?id={{.ID}}"
+                          hx-target="#envvar-section"
+                          hx-swap="outerHTML"
+                          hx-confirm="Remove {{.Key}}?"
+                          hx-headers='{"X-CSRF-Token": "{{$.CSRF}}"}'
+                          style="display:inline; margin:0">
+                        <button type="submit" class="outline secondary btn-sm">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {{end}}
 
-    <form method="POST" action="/projects/{{.Project.Name}}/env"
-          hx-post="/projects/{{.Project.Name}}/env"
-          hx-target="#envvar-section"
-          hx-swap="outerHTML"
-          hx-headers='{"X-CSRF-Token": "{{.CSRF}}"}'>
-        <div class="envvar-row">
-            <input class="envvar-key" type="text" name="key" placeholder="KEY" required>
-            <input class="envvar-value" type="text" name="value" placeholder="value" required>
-            <button type="submit" class="btn-sm">Add</button>
-        </div>
-    </form>
+            {{/* Add new variable */}}
+            <tr class="env-add-row">
+                <td colspan="3">
+                    <form method="POST" action="/projects/{{.Project.Name}}/env"
+                          hx-post="/projects/{{.Project.Name}}/env"
+                          hx-target="#envvar-section"
+                          hx-swap="outerHTML"
+                          hx-headers='{"X-CSRF-Token": "{{.CSRF}}"}'>
+                        <div style="display:flex; gap:0.75rem; align-items:center">
+                            <input type="text" name="key" placeholder="KEY" required
+                                   style="flex:1; text-transform:uppercase; font-family:'SF Mono','Fira Code',monospace; font-size:0.85rem; margin:0">
+                            <input type="text" name="value" placeholder="value" required
+                                   style="flex:2; font-family:'SF Mono','Fira Code',monospace; font-size:0.85rem; margin:0">
+                            <button type="submit" class="btn-sm">Add</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>
+
+<script>
+function toggleMask(btn) {
+    var span = btn.parentElement.querySelector('.env-value-text');
+    var val = span.getAttribute('data-value');
+    if (span.textContent === val) {
+        span.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+        span.classList.add('env-masked');
+        btn.innerHTML = '&#x1f441;';
+    } else {
+        span.textContent = val;
+        span.classList.remove('env-masked');
+        btn.innerHTML = '&#x1f512;';
+    }
+}
+
+function startEdit(btn, id, key, value, projectName, csrf) {
+    var row = document.getElementById('envvar-' + id);
+    var valueTd = row.querySelector('.env-value-td');
+    var actionsTd = row.querySelector('.env-actions');
+
+    var escapedValue = value.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    valueTd.innerHTML = '<input type="text" name="edit_value" value="' + escapedValue + '" style="margin:0; font-family:monospace; font-size:0.85rem;">';
+
+    actionsTd.innerHTML =
+        '<form method="POST" action="/projects/' + projectName + '/env" ' +
+        'hx-post="/projects/' + projectName + '/env" ' +
+        'hx-target="#envvar-section" hx-swap="outerHTML" ' +
+        'hx-headers=\'{"X-CSRF-Token": "' + csrf + '"}\'  style="display:inline;margin:0">' +
+        '<input type="hidden" name="key" value="' + key + '">' +
+        '<input type="hidden" name="value" value="">' +
+        '<button type="submit" class="btn-sm" onclick="this.form.querySelector(\'input[name=value]\').value = this.form.closest(\'tr\').querySelector(\'input[name=edit_value]\').value">Save</button>' +
+        '</form> ' +
+        '<button type="button" class="btn-sm outline secondary" onclick="window.location.href=\'/projects/' + projectName + '?tab=env\'">Cancel</button>';
+}
+
+// Auto-mask sensitive values on load
+(function() {
+    var sensitivePattern = /SECRET|KEY|TOKEN|PASSWORD|CREDENTIAL/i;
+    document.querySelectorAll('#envvar-section .env-value-text').forEach(function(span) {
+        var key = span.closest('tr').querySelector('.env-key');
+        if (key && sensitivePattern.test(key.textContent)) {
+            span.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+            span.classList.add('env-masked');
+            var btn = span.parentElement.querySelector('.toggle-mask');
+            if (btn) btn.innerHTML = '&#x1f441;';
+        }
+    });
+})();
+</script>
 {{end}}

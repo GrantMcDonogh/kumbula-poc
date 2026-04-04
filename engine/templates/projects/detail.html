@@ -8,33 +8,52 @@
 </div>
 
 {{if eq .Tab "overview"}}
-<article>
-    <header>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-            <span class="badge {{statusClass .Project.Status}}">{{.Project.Status}}</span>
-            <form method="POST" action="/projects/{{.Project.Name}}/redeploy" style="margin:0">
-                <input type="hidden" name="_csrf" value="{{.CSRF}}">
-                <button type="submit" class="outline btn-sm">Redeploy</button>
-            </form>
-        </div>
-    </header>
 
-    <dl>
-        <dt>URL</dt>
-        <dd><a href="{{.Project.URL}}" target="_blank">{{.Project.URL}}</a></dd>
+<div class="status-bar">
+    <span class="status-badge {{statusClass .Project.Status}}">{{.Project.Status}}</span>
+    <a href="{{.Project.URL}}" target="_blank">{{.Project.URL}}</a>
+    <form method="POST" action="/projects/{{.Project.Name}}/redeploy" style="margin:0"
+          hx-post="/projects/{{.Project.Name}}/redeploy"
+          hx-headers='{"X-CSRF-Token": "{{.CSRF}}"}'
+          hx-confirm="Redeploy {{.Project.Name}}?">
+        <input type="hidden" name="_csrf" value="{{.CSRF}}">
+        <button type="submit" class="outline btn-sm">Redeploy</button>
+    </form>
+</div>
 
-        <dt>Repository</dt>
-        <dd><code>{{.Project.GiteaRepo}}</code></dd>
+<div class="info-grid">
+    <article>
+        <dl>
+            <dt>URL</dt>
+            <dd><a href="{{.Project.URL}}" target="_blank">{{.Project.URL}}</a></dd>
+        </dl>
+    </article>
+    <article>
+        <dl>
+            <dt>Repository</dt>
+            <dd><code>{{.Project.GiteaRepo}}</code></dd>
+        </dl>
+    </article>
+    <article>
+        <dl>
+            <dt>Status</dt>
+            <dd><span class="status-badge {{statusClass .Project.Status}}">{{.Project.Status}}</span></dd>
+        </dl>
+    </article>
+    <article>
+        <dl>
+            <dt>Created</dt>
+            <dd>{{.Project.CreatedAt.Format "2006-01-02 15:04"}}</dd>
+        </dl>
+    </article>
+</div>
 
-        <dt>Created</dt>
-        <dd>{{.Project.CreatedAt.Format "2006-01-02 15:04"}}</dd>
-    </dl>
-
-    <h4>Git remote setup</h4>
+<details>
+    <summary>Git remote setup</summary>
     <pre><code>git remote add kumbula http://{{.User.Username}}@gitea.kumbula.local/{{.Project.GiteaRepo}}.git
 git push kumbula main</code></pre>
     <p><small>When prompted for a password, use your Gitea password (shown once at signup).</small></p>
-</article>
+</details>
 
 {{else if eq .Tab "builds"}}
 {{template "build_list" .}}

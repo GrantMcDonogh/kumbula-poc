@@ -1,7 +1,20 @@
 {{define "settings_form"}}
 <h4>Project Settings</h4>
 {{if .SettingsError}}<p class="error-msg">{{.SettingsError}}</p>{{end}}
-{{if .SettingsSuccess}}<p style="color: var(--pico-ins-color);">{{.SettingsSuccess}}</p>{{end}}
+{{if .SettingsSuccess}}<p class="success-msg">{{.SettingsSuccess}}</p>{{end}}
+
+<article>
+    <h4>Project Info</h4>
+    <dl>
+        <dt>Name</dt>
+        <dd>{{.Project.Name}}</dd>
+        <dt>Created</dt>
+        <dd>{{.Project.CreatedAt.Format "2006-01-02 15:04"}}</dd>
+        <dt>Status</dt>
+        <dd><span class="status-badge {{statusClass .Project.Status}}">{{.Project.Status}}</span></dd>
+    </dl>
+</article>
+
 <div class="danger-zone">
     <h4>Danger Zone</h4>
     <p>Permanently delete this project. This will:</p>

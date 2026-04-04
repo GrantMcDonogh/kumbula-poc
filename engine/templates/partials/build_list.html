@@ -14,7 +14,10 @@
         {{range .Builds}}
         <tr>
             <td>{{.ID}}</td>
-            <td><span class="badge {{statusClass .Status}}">{{.Status}}</span></td>
+            <td>
+                {{if eq .Status "building"}}<span class="pulse-dot"></span>{{end}}
+                <span class="status-badge {{statusClass .Status}}">{{.Status}}</span>
+            </td>
             <td>
                 {{if .CommitSHA}}
                     <code>{{printf "%.7s" .CommitSHA}}</code>
@@ -31,27 +34,31 @@
             </td>
             <td>
                 {{if .FinishedAt.Valid}}
-                    {{.FinishedAt.Time.Sub .StartedAt.Time}}
+                    <span class="duration">{{.FinishedAt.Time.Sub .StartedAt.Time}}</span>
                 {{else}}
                     -
                 {{end}}
             </td>
         </tr>
         <tr>
-            <td colspan="5">
+            <td colspan="5" style="padding:0">
                 {{if eq .Status "building"}}
-                <div class="build-log"
-                     hx-ext="sse"
-                     sse-connect="/projects/{{$.Project.Name}}/builds/{{.ID}}/stream"
-                     sse-swap="log"
-                     hx-swap="beforeend">
-                    <pre><code>Building...</code></pre>
+                <div class="build-log-container">
+                    <div class="build-log"
+                         hx-ext="sse"
+                         sse-connect="/projects/{{$.Project.Name}}/builds/{{.ID}}/stream"
+                         sse-swap="log"
+                         hx-swap="beforeend">
+                        <pre><code>Building...</code></pre>
+                    </div>
                 </div>
                 {{else}}
-                <details>
-                    <summary>Build log</summary>
-                    <pre><code>{{.Log}}</code></pre>
-                </details>
+                <div class="build-log-container">
+                    <details>
+                        <summary>Build log</summary>
+                        <div class="build-log"><pre><code>{{.Log}}</code></pre></div>
+                    </details>
+                </div>
                 {{end}}
             </td>
         </tr>

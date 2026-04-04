@@ -6,7 +6,8 @@
         <header>
             <a href="/projects/{{.Name}}"><strong>{{.Name}}</strong></a>
             <span class="{{.Status | statusClass}}">
-                <span class="status-badge">{{.Status}}</span>
+                <span class="status-dot"></span>
+                <small>{{.Status}}</small>
             </span>
         </header>
         <p><a href="{{.URL}}" target="_blank">{{.URL}}</a></p>
@@ -17,8 +18,11 @@
     {{end}}
 </div>
 {{else}}
-<article>
-    <p>No projects yet. <a href="/projects/new">Create your first project</a> to get started.</p>
+<article style="text-align:center; padding: 3rem">
+    <p style="font-size: 3rem; margin-bottom: 0.5rem">&#x1f680;</p>
+    <h3>No projects yet</h3>
+    <p>Create your first project to get started.</p>
+    <a href="/projects/new" role="button">New Project</a>
 </article>
 {{end}}
 {{end}}

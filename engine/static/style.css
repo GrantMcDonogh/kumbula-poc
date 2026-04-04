@@ -16,6 +16,22 @@
     margin-bottom: 1rem;
 }
 
+/* Success message with auto-fade */
+.success-msg {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    animation: fade-out 3s ease-in forwards;
+    animation-delay: 2s;
+}
+
+@keyframes fade-out {
+    to { opacity: 0; height: 0; padding: 0; margin: 0; overflow: hidden; }
+}
+
 /* Small button */
 .btn-sm {
     padding: 0.25rem 0.75rem;
@@ -33,6 +49,11 @@
 /* Project card */
 .project-card {
     padding: 1.25rem;
+    transition: border-color 0.2s;
+}
+
+.project-card:hover {
+    border-color: var(--pico-primary);
 }
 
 .project-card h3 {
@@ -75,6 +96,21 @@
     border: 1px solid rgba(156, 163, 175, 0.3);
 }
 
+/* Status dot for project cards */
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+}
+
+.status-running .status-dot { background: #22c55e; }
+.status-building .status-dot { background: #f59e0b; }
+.status-failed .status-dot { background: #ef4444; }
+.status-default .status-dot { background: #9ca3af; }
+
 /* Build log */
 .build-log {
     background: #0d1117;
@@ -90,7 +126,47 @@
     overflow-y: auto;
 }
 
-/* Environment variable row */
+/* Build log container */
+.build-log-container {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.build-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: #161b22;
+    font-size: 0.85rem;
+    color: #8b949e;
+}
+
+/* Pulse dot for active builds */
+.pulse-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f59e0b;
+    margin-right: 0.4rem;
+    animation: pulse 1.5s ease-in-out infinite;
+    vertical-align: middle;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* Duration monospace */
+.duration {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+}
+
+/* Environment variable row (legacy) */
 .envvar-row {
     display: flex;
     gap: 0.75rem;
@@ -100,6 +176,138 @@
 
 .envvar-row input {
     flex: 1;
+}
+
+/* Env var table */
+.env-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.env-table th {
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--pico-muted-color);
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid var(--pico-muted-border-color);
+}
+
+.env-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    vertical-align: middle;
+}
+
+.env-key {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.env-value {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+}
+
+.env-masked {
+    letter-spacing: 0.1em;
+    user-select: none;
+}
+
+.env-system td {
+    opacity: 0.5;
+}
+
+.env-system .env-key::after {
+    content: "system";
+    font-family: inherit;
+    font-weight: normal;
+    font-size: 0.7rem;
+    margin-left: 0.5rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    background: var(--pico-muted-border-color);
+    color: var(--pico-muted-color);
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.env-actions {
+    white-space: nowrap;
+    text-align: right;
+}
+
+.env-actions button {
+    margin-left: 0.25rem;
+}
+
+.toggle-mask {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 0.25rem;
+    font-size: 0.85rem;
+    opacity: 0.5;
+}
+
+.toggle-mask:hover {
+    opacity: 1;
+}
+
+/* Add row separator */
+.env-add-row td {
+    padding-top: 1rem;
+    border-bottom: none;
+}
+
+/* Flash animation for changed rows */
+.flash-row {
+    animation: flash-highlight 1.5s ease-out;
+}
+
+@keyframes flash-highlight {
+    from { background-color: rgba(34, 197, 94, 0.15); }
+    to { background-color: transparent; }
+}
+
+/* Info grid for overview */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-grid article {
+    margin-bottom: 0;
+}
+
+.info-grid dt {
+    font-size: 0.8rem;
+    color: var(--pico-muted-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.info-grid dd {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* Status bar */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--pico-card-background-color);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
 }
 
 /* Danger zone */
@@ -147,4 +355,9 @@
 .tabs a.active {
     color: var(--pico-primary);
     border-bottom-color: var(--pico-primary);
+}
+
+/* Nav border */
+nav {
+    border-bottom: 1px solid var(--pico-muted-border-color);
 }
