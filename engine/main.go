@@ -163,6 +163,8 @@ func routeProject(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		http.NotFound(w, r)
+	case "import":
+		handleGitHubImport(w, r)
 	default:
 		http.NotFound(w, r)
 	}
