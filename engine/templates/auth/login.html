@@ -1,0 +1,19 @@
+{{define "content"}}
+<article class="auth-card">
+    <header>
+        <h2>Log in to KumbulaCloud</h2>
+    </header>
+    {{if .Error}}
+    <p class="error-msg">{{.Error}}</p>
+    {{end}}
+    <form method="POST" action="/login">
+        <input type="hidden" name="_csrf" value="{{.CSRF}}">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Log in</button>
+    </form>
+    <p>Don't have an account? <a href="/signup">Sign up</a></p>
+</article>
+{{end}}

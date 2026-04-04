@@ -1,0 +1,150 @@
+/* KumbulaCloud — Custom CSS overrides for Pico */
+
+/* Auth card */
+.auth-card {
+    max-width: 420px;
+    margin: 2rem auto;
+}
+
+/* Error message */
+.error-msg {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.1);
+    border: 1px solid rgba(229, 62, 62, 0.3);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Small button */
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+/* Project grid */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Project card */
+.project-card {
+    padding: 1.25rem;
+}
+
+.project-card h3 {
+    margin-bottom: 0.5rem;
+}
+
+/* Status badge */
+.status-badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Status colors */
+.status-running {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-building {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-failed {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-default {
+    color: #9ca3af;
+    background: rgba(156, 163, 175, 0.15);
+    border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+/* Build log */
+.build-log {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+    font-size: 0.85rem;
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Environment variable row */
+.envvar-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.envvar-row input {
+    flex: 1;
+}
+
+/* Danger zone */
+.danger-zone {
+    border: 2px solid #ef4444;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-top: 2rem;
+}
+
+.danger-zone h4 {
+    color: #ef4444;
+    margin-bottom: 0.75rem;
+}
+
+/* Page header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--pico-muted-border-color);
+    margin-bottom: 1.5rem;
+}
+
+.tabs a {
+    padding: 0.5rem 1.25rem;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    color: var(--pico-muted-color);
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.tabs a:hover {
+    color: var(--pico-primary);
+}
+
+.tabs a.active {
+    color: var(--pico-primary);
+    border-bottom-color: var(--pico-primary);
+}

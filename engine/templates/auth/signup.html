@@ -1,0 +1,22 @@
+{{define "content"}}
+<article class="auth-card">
+    <header>
+        <h2>Create your KumbulaCloud account</h2>
+    </header>
+    {{if .Error}}
+    <p class="error-msg">{{.Error}}</p>
+    {{end}}
+    <form method="POST" action="/signup">
+        <input type="hidden" name="_csrf" value="{{.CSRF}}">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus
+               pattern="[a-z][a-z0-9-]{1,48}[a-z0-9]" title="Lowercase letters, numbers, hyphens. 3-50 chars.">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required minlength="8">
+        <button type="submit">Create account</button>
+    </form>
+    <p>Already have an account? <a href="/login">Log in</a></p>
+</article>
+{{end}}
