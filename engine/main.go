@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 const (
@@ -17,6 +18,7 @@ const (
 	POSTGRES_PASS      = "kumbula_secret_2024"
 	CLONE_BASE         = "/tmp/kumbula-builds"
 	GITEA_DOMAIN       = "gitea.kumbula.local"
+	ENGINE_PORT        = "9000"
 )
 
 // GiteaWebhook is the payload Gitea sends on push
@@ -55,15 +57,110 @@ func main() {
 	}
 
 	InitGitea()
+	initTemplates()
 
-	http.HandleFunc("/webhook", handleWebhook)
-	http.HandleFunc("/apps", handleListApps)
-	http.HandleFunc("/health", handleHealth)
+	mux := http.NewServeMux()
 
-	port := "9000"
-	log.Printf("KumbulaCloud Engine starting on :%s", port)
+	// --- Static files ---
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
+	// --- Public routes ---
+	mux.HandleFunc("/health", handleHealth)
+	mux.HandleFunc("/apps", handleListApps)
+	mux.HandleFunc("/webhook", handleWebhook)
+
+	// --- Auth routes ---
+	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			handleLoginPage(w, r)
+		case http.MethodPost:
+			handleLogin(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	mux.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			handleSignupPage(w, r)
+		case http.MethodPost:
+			handleSignup(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	mux.HandleFunc("/logout", handleLogout)
+
+	// --- Authenticated routes ---
+	mux.Handle("/", RequireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		handleDashboard(w, r)
+	})))
+	mux.Handle("/projects/", RequireAuth(RequireProjectOwner(http.HandlerFunc(routeProject))))
+	mux.Handle("/partials/project-cards", RequireAuth(http.HandlerFunc(handleProjectCardsPartial)))
+
+	// Wrap the entire mux with session middleware
+	handler := SessionMiddleware(mux)
+
+	log.Printf("KumbulaCloud Engine starting on :%s", ENGINE_PORT)
 	log.Printf("   Domain: *.%s", DEPLOY_DOMAIN)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+ENGINE_PORT, handler))
+}
+
+// routeProject dispatches /projects/* sub-routes.
+func routeProject(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	// parts[0] = "projects", parts[1] = name or "new", parts[2+] = action
+
+	if len(parts) < 2 {
+		http.NotFound(w, r)
+		return
+	}
+
+	name := parts[1]
+
+	// /projects/new
+	if name == "new" {
+		switch r.Method {
+		case http.MethodGet:
+			handleNewProjectPage(w, r)
+		case http.MethodPost:
+			handleCreateProject(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+		return
+	}
+
+	// /projects/{name}
+	if len(parts) == 2 {
+		handleProjectDetail(w, r)
+		return
+	}
+
+	// /projects/{name}/{action}
+	action := parts[2]
+	switch action {
+	case "redeploy":
+		handleRedeploy(w, r)
+	case "env":
+		handleEnvVars(w, r)
+	case "settings":
+		handleProjectSettings(w, r)
+	case "builds":
+		// /projects/{name}/builds/{id}/stream
+		if len(parts) >= 5 && parts[4] == "stream" {
+			handleBuildStream(w, r)
+			return
+		}
+		http.NotFound(w, r)
+	default:
+		http.NotFound(w, r)
+	}
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
