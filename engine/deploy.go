@@ -114,7 +114,7 @@ RUN npm ci --production 2>/dev/null || npm install --production
 COPY . .
 ENV PORT=3000
 EXPOSE 3000
-CMD ["node", "index.js"]
+CMD ["npm", "start"]
 `
 	case "python":
 		dockerfile = `FROM python:3.12-slim

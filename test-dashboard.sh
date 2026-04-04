@@ -30,7 +30,7 @@ fi
 echo "   PASS: Signup page loads"
 
 echo "4. Dashboard redirects to login when not authenticated..."
-STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L --max-redirs 0 "$ENGINE/")
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$ENGINE/")
 if [ "$STATUS" != "303" ]; then
     echo "FAIL: Dashboard should redirect (got $STATUS)"
     exit 1

@@ -76,11 +76,41 @@ func GiteaCreateUser(username, email, password string) error {
 	if err != nil {
 		return fmt.Errorf("create user request: %w", err)
 	}
+	if status == 422 {
+		// User already exists in Gitea (orphaned from a previous signup).
+		// Delete and recreate so the new password is set correctly.
+		log.Printf("Gitea: user %s already exists, deleting and recreating", username)
+		if err := GiteaDeleteUser(username); err != nil {
+			return fmt.Errorf("delete stale user: %w", err)
+		}
+		data, status, err = giteaRequest("POST", "/api/v1/admin/users", GiteaAdminToken, payload)
+		if err != nil {
+			return fmt.Errorf("recreate user request: %w", err)
+		}
+		if status != 201 {
+			return fmt.Errorf("recreate user failed (status %d): %s", status, string(data))
+		}
+		log.Printf("Gitea: recreated user %s", username)
+		return nil
+	}
 	if status != 201 {
 		return fmt.Errorf("create user failed (status %d): %s", status, string(data))
 	}
 
 	log.Printf("Gitea: created user %s", username)
+	return nil
+}
+
+func GiteaDeleteUser(username string) error {
+	path := fmt.Sprintf("/api/v1/admin/users/%s?purge=true", username)
+	data, status, err := giteaRequest("DELETE", path, GiteaAdminToken, nil)
+	if err != nil {
+		return fmt.Errorf("delete user request: %w", err)
+	}
+	if status != 204 {
+		return fmt.Errorf("delete user failed (status %d): %s", status, string(data))
+	}
+	log.Printf("Gitea: deleted user %s", username)
 	return nil
 }
 
