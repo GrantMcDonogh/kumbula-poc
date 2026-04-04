@@ -8,6 +8,66 @@ import (
 	"strings"
 )
 
+// handleUserSettings renders the user settings page.
+func handleUserSettings(w http.ResponseWriter, r *http.Request) {
+	user := CtxUser(r)
+	freshUser, err := GetUserByID(user.ID)
+	if err != nil {
+		log.Printf("settings: failed to reload user %d: %v", user.ID, err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Title":          "Settings",
+		"HasGithubToken": freshUser.GithubToken != "",
+	}
+	RenderShell(w, r, "settings", data)
+}
+
+// handleUserSettingsSave processes the settings form submission.
+func handleUserSettingsSave(w http.ResponseWriter, r *http.Request) {
+	// CSRF check
+	csrf := r.FormValue("_csrf")
+	if csrf != CtxCSRF(r) {
+		http.Error(w, "Forbidden — invalid CSRF token", http.StatusForbidden)
+		return
+	}
+
+	user := CtxUser(r)
+	action := r.FormValue("action")
+
+	switch action {
+	case "save_github_token":
+		token := strings.TrimSpace(r.FormValue("github_token"))
+		if err := UpdateGithubToken(user.ID, token); err != nil {
+			log.Printf("settings: failed to update GitHub token for user %d: %v", user.ID, err)
+			RenderShell(w, r, "settings", map[string]interface{}{
+				"Title":          "Settings",
+				"HasGithubToken": false,
+				"Error":          "Failed to save token. Please try again.",
+			})
+			return
+		}
+		RenderShell(w, r, "settings", map[string]interface{}{
+			"Title":          "Settings",
+			"HasGithubToken": token != "",
+			"Success":        "GitHub token saved.",
+		})
+	case "remove_github_token":
+		if err := UpdateGithubToken(user.ID, ""); err != nil {
+			log.Printf("settings: failed to remove GitHub token for user %d: %v", user.ID, err)
+		}
+		RenderShell(w, r, "settings", map[string]interface{}{
+			"Title":          "Settings",
+			"HasGithubToken": false,
+			"Success":        "GitHub token removed.",
+		})
+	default:
+		http.Error(w, "unknown action", http.StatusBadRequest)
+	}
+}
+
 func handleProjectSettings(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		handleProjectDetail(w, r)

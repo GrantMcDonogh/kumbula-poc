@@ -1,0 +1,58 @@
+{{define "content"}}
+<div class="topbar">
+    <div class="topbar-breadcrumb">
+        <span class="crumb-current">Settings</span>
+    </div>
+    <div class="topbar-actions"></div>
+</div>
+
+<div class="content">
+    <div style="max-width:640px;">
+        {{if .Error}}
+        <div class="error-msg">{{.Error}}</div>
+        {{end}}
+        {{if .Success}}
+        <div class="success-msg">{{.Success}}</div>
+        {{end}}
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">GitHub Integration</span>
+                {{if .HasGithubToken}}
+                <span class="card-badge teal">Connected</span>
+                {{end}}
+            </div>
+
+            <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">
+                Add a Personal Access Token to import private repositories from GitHub.<br>
+                Generate one at
+                <a href="https://github.com/settings/tokens/new?scopes=repo&description=KumbulaCloud" target="_blank" style="color:var(--accent);">
+                    GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens
+                </a>.
+                Needs <code>repo</code> scope for private repos.
+            </p>
+
+            {{if .HasGithubToken}}
+            <div class="info-row" style="margin-bottom:16px;">
+                <span class="info-key">Status</span>
+                <span class="info-val accent">Token saved</span>
+            </div>
+            <form method="POST" action="/settings">
+                <input type="hidden" name="_csrf" value="{{.CSRF}}">
+                <input type="hidden" name="action" value="remove_github_token">
+                <button type="submit" class="btn-sm danger">Remove token</button>
+            </form>
+            {{else}}
+            <form method="POST" action="/settings">
+                <input type="hidden" name="_csrf" value="{{.CSRF}}">
+                <input type="hidden" name="action" value="save_github_token">
+                <div class="env-add-row">
+                    <input type="password" name="github_token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" required style="flex:1;">
+                    <button type="submit" class="btn-sm primary">Save token</button>
+                </div>
+            </form>
+            {{end}}
+        </div>
+    </div>
+</div>
+{{end}}

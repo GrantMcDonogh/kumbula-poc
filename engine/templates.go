@@ -94,6 +94,7 @@ func initTemplates() {
 		"dashboard":   "dashboard/index.html",
 		"new_project": "projects/new.html",
 		"detail":      "projects/detail.html",
+		"settings":    "settings.html",
 	}
 
 	// Auth pages (no sidebar)
