@@ -1526,4 +1526,28 @@ body::before {
 
 /* ─── Utility ────────────────────────────────────────────── */
 .mono { font-family: var(--font-mono); }
+
+/* Settings button in sidebar footer */
+.sidebar-settings-btn {
+    color: var(--text-tertiary);
+    text-decoration: none;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.15s;
+}
+.sidebar-settings-btn:hover {
+    color: var(--text-primary);
+}
+
+/* Success message */
+.success-msg {
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    color: #34d399;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    margin-bottom: 16px;
+}
 .hidden { display: none !important; }

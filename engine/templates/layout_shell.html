@@ -55,6 +55,7 @@
                 <div class="user-name">{{.User.Username}}</div>
                 <div class="user-plan">{{len .SidebarProjects}} project{{if ne (len .SidebarProjects) 1}}s{{end}}</div>
             </div>
+            <a href="/settings" class="sidebar-settings-btn" title="Settings">&#9881;</a>
             <form method="POST" action="/logout" style="margin:0">
                 <input type="hidden" name="_csrf" value="{{.CSRF}}">
                 <button type="submit" class="logout-btn">Logout</button>
