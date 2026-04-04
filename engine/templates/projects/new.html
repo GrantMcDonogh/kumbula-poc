@@ -1,0 +1,20 @@
+{{define "content"}}
+<article class="auth-card">
+    <header>
+        <h2>Create a new project</h2>
+    </header>
+    {{if .Error}}
+    <p class="error-msg">{{.Error}}</p>
+    {{end}}
+    <form method="POST" action="/projects/new">
+        <input type="hidden" name="_csrf" value="{{.CSRF}}">
+        <label for="name">Project name</label>
+        <input type="text" id="name" name="name" required autofocus
+               pattern="[a-z][a-z0-9-]{1,48}[a-z0-9]"
+               title="Lowercase letters, numbers, hyphens. 3-50 chars."
+               placeholder="my-awesome-app">
+        <small>This becomes your app URL: <code>http://&lt;name&gt;.kumbula.local</code></small>
+        <button type="submit">Create project</button>
+    </form>
+</article>
+{{end}}
