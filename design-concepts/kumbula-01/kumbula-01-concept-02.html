@@ -1,0 +1,1925 @@
+<!-- Concept 2: Layout Structure — Terminal Command Bar -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1440" />
+  <title>KumbulaCloud — Terminal Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet" />
+  <style>
+    /* ─────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0a0a0a;
+      --bg-subtle:   #0f0f0f;
+      --bg-raised:   #141414;
+      --bg-overlay:  #1a1a1a;
+      --border:      #1e1e1e;
+      --border-dim:  #161616;
+      --green:       #00ff41;
+      --green-dim:   #00c832;
+      --green-muted: #003a0f;
+      --amber:       #ffb000;
+      --amber-muted: #3a2800;
+      --red:         #ff3333;
+      --red-muted:   #3a0000;
+      --blue:        #00b4ff;
+      --blue-muted:  #002233;
+      --text-pri:    #d4d4d4;
+      --text-sec:    #666666;
+      --text-dim:    #3a3a3a;
+      --font:        'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    html, body {
+      width: 1440px;
+      min-height: 900px;
+      background: var(--bg);
+      color: var(--text-pri);
+      font-family: var(--font);
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* ─────────────────────────────────────────
+       CRT SCANLINE OVERLAY
+    ───────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+    }
+
+    /* Vignette */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%);
+    }
+
+    /* ─────────────────────────────────────────
+       SCROLLBAR
+    ───────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 0; }
+    ::-webkit-scrollbar-thumb:hover { background: #2a2a2a; }
+
+    /* ─────────────────────────────────────────
+       LAYOUT SHELL
+    ───────────────────────────────────────── */
+    .shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 900px;
+      position: relative;
+    }
+
+    /* ─────────────────────────────────────────
+       TOP BAR
+    ───────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      height: 42px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 20px;
+      flex-shrink: 0;
+    }
+
+    .logo-icon {
+      width: 20px;
+      height: 20px;
+      border: 1.5px solid var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-icon::before {
+      content: '\25B6';
+      font-size: 8px;
+      color: var(--green);
+    }
+
+    .logo-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .topbar-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      margin: 0 16px;
+      flex-shrink: 0;
+    }
+
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: auto;
+      font-size: 12px;
+      color: var(--text-sec);
+    }
+
+    .breadcrumbs a {
+      color: var(--text-sec);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .breadcrumbs a:hover { color: var(--text-pri); }
+    .breadcrumbs .sep { color: var(--text-dim); }
+    .breadcrumbs .current { color: var(--text-pri); }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .topbar-kbd {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .topbar-kbd:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .topbar-kbd kbd {
+      font-family: var(--font);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      padding: 1px 4px;
+      font-size: 10px;
+      color: var(--text-sec);
+    }
+
+    .avatar {
+      width: 26px;
+      height: 26px;
+      background: var(--green-muted);
+      border: 1px solid var(--green-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--green);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    /* ─────────────────────────────────────────
+       COMMAND BAR
+    ───────────────────────────────────────── */
+    .cmdbar-wrap {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      flex-shrink: 0;
+    }
+
+    .cmdbar {
+      display: flex;
+      align-items: center;
+      background: var(--bg-subtle);
+      border: 1px solid var(--green);
+      box-shadow: 0 0 12px rgba(0,255,65,0.08), inset 0 0 20px rgba(0,255,65,0.02);
+      padding: 0 14px;
+      height: 44px;
+      gap: 10px;
+      position: relative;
+    }
+
+    .cmdbar-prompt {
+      color: var(--green);
+      font-size: 16px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .cmdbar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text-pri);
+      caret-color: var(--green);
+    }
+
+    .cmdbar input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .cmdbar-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .cmdbar-hint kbd {
+      font-family: var(--font);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      font-size: 10px;
+      color: var(--text-sec);
+    }
+
+    .cmdbar-suggestions {
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      right: 0;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-top: none;
+      z-index: 200;
+    }
+
+    .cmd-suggestion {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: var(--text-sec);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .cmd-suggestion:hover,
+    .cmd-suggestion.active {
+      background: var(--bg-overlay);
+      color: var(--text-pri);
+    }
+
+    .cmd-icon {
+      color: var(--green);
+      font-size: 11px;
+      width: 16px;
+      flex-shrink: 0;
+    }
+
+    .cmd-label { flex: 1; }
+
+    .cmd-badge {
+      font-size: 10px;
+      padding: 1px 5px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+
+    /* ─────────────────────────────────────────
+       MAIN LAYOUT
+    ───────────────────────────────────────── */
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 520px;
+      gap: 0;
+      flex: 1;
+    }
+
+    /* ─────────────────────────────────────────
+       LEFT: PROJECT LIST
+    ───────────────────────────────────────── */
+    .projects-panel {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border-dim);
+      background: var(--bg-subtle);
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-sec);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title .count {
+      font-weight: 400;
+      color: var(--text-dim);
+    }
+
+    .btn {
+      font-family: var(--font);
+      font-size: 11px;
+      padding: 4px 10px;
+      border: 1px solid;
+      background: transparent;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-green {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .btn-green:hover {
+      background: var(--green-muted);
+    }
+
+    .btn-ghost {
+      border-color: var(--border);
+      color: var(--text-sec);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--text-sec);
+      color: var(--text-pri);
+    }
+
+    .projects-table-wrap {
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    table.projects-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table.projects-table thead tr {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    table.projects-table th {
+      padding: 6px 12px 6px 20px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    table.projects-table td { padding: 0; }
+
+    .proj-row {
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-dim);
+      transition: background 0.1s;
+    }
+
+    .proj-row:hover .proj-cell { background: #111111; }
+    .proj-row.selected .proj-cell { background: #0d1a0d; }
+    .proj-row.selected .proj-cell.proj-name-cell { border-left: 2px solid var(--green); }
+
+    .proj-cell {
+      padding: 11px 12px 11px 20px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background 0.1s;
+    }
+
+    .proj-cell.proj-name-cell { padding-left: 18px; }
+    .proj-row.selected .proj-cell.proj-name-cell { padding-left: 16px; }
+
+    .proj-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-pri);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .proj-name .arrow {
+      color: var(--text-dim);
+      font-size: 10px;
+    }
+
+    .proj-row.selected .proj-name { color: var(--green); }
+    .proj-row.selected .arrow { color: var(--green); }
+
+    .proj-sub {
+      font-size: 11px;
+      color: var(--text-sec);
+      margin-top: 2px;
+    }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      padding: 2px 7px;
+      border: 1px solid;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-running {
+      color: var(--green);
+      border-color: var(--green-muted);
+      background: rgba(0,255,65,0.05);
+    }
+
+    .status-running .status-dot {
+      background: var(--green);
+      animation: pulse-green 1.5s ease-in-out infinite;
+    }
+
+    .status-building {
+      color: var(--amber);
+      border-color: var(--amber-muted);
+      background: rgba(255,176,0,0.05);
+    }
+
+    .status-building .status-dot {
+      background: var(--amber);
+      animation: pulse-amber 0.8s ease-in-out infinite;
+    }
+
+    .status-failed {
+      color: var(--red);
+      border-color: var(--red-muted);
+      background: rgba(255,51,51,0.05);
+    }
+
+    .status-failed .status-dot { background: var(--red); }
+
+    .status-stopped {
+      color: var(--text-sec);
+      border-color: var(--border);
+      background: transparent;
+    }
+
+    .status-stopped .status-dot { background: var(--text-sec); }
+
+    @keyframes pulse-green {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--green); }
+      50% { opacity: 0.4; box-shadow: none; }
+    }
+
+    @keyframes pulse-amber {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--amber); }
+      50% { opacity: 0.5; box-shadow: none; }
+    }
+
+    .proj-url {
+      font-size: 11px;
+      color: var(--blue);
+      text-decoration: none;
+      transition: opacity 0.15s;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+
+    .proj-url:hover { opacity: 0.7; text-decoration: underline; }
+
+    .proj-meta {
+      font-size: 11px;
+      color: var(--text-sec);
+    }
+
+    .proj-sha {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    .proj-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .proj-row:hover .proj-actions,
+    .proj-row.selected .proj-actions { opacity: 1; }
+
+    .icon-btn {
+      font-family: var(--font);
+      font-size: 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 2px 6px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--text-sec);
+      color: var(--text-pri);
+    }
+
+    /* ─────────────────────────────────────────
+       RIGHT: PROJECT DETAIL
+    ───────────────────────────────────────── */
+    .detail-panel {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .detail-header {
+      padding: 14px 20px 0;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .detail-proj-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+      text-shadow: 0 0 8px rgba(0,255,65,0.5);
+    }
+
+    .detail-proj-name .badge {
+      font-size: 10px;
+      padding: 1px 6px;
+      border: 1px solid var(--green-muted);
+      color: var(--green-dim);
+      font-weight: 400;
+      text-shadow: none;
+    }
+
+    .detail-proj-url {
+      font-size: 11px;
+      color: var(--blue);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-proj-url span { color: var(--text-sec); }
+
+    .tabs {
+      display: flex;
+    }
+
+    .tab {
+      font-family: var(--font);
+      font-size: 11px;
+      padding: 7px 14px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-sec);
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+
+    .tab:hover { color: var(--text-pri); }
+
+    .tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+    }
+
+    .detail-body {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─────────────────────────────────────────
+       TERMINAL BLOCK
+    ───────────────────────────────────────── */
+    .terminal {
+      background: #050505;
+      border: 1px solid var(--border);
+      margin: 14px 16px;
+      flex-shrink: 0;
+    }
+
+    .terminal-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .term-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .term-dot-red    { background: #ff5f56; }
+    .term-dot-amber  { background: #ffbd2e; }
+    .term-dot-green  { background: #27c93f; }
+
+    .terminal-titlebar-text {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: 4px;
+      flex: 1;
+    }
+
+    .terminal-titlebar-badge {
+      font-size: 10px;
+      color: var(--amber);
+      padding: 1px 6px;
+      border: 1px solid var(--amber-muted);
+    }
+
+    .terminal-body {
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    /* Build log lines — revealed one by one */
+    .t-line {
+      display: flex;
+      gap: 6px;
+      opacity: 0;
+      animation: fadeInLine 0.05s forwards;
+    }
+
+    .t-ts    { color: #2a2a2a; flex-shrink: 0; user-select: none; }
+    .t-green { color: var(--green); }
+    .t-amber { color: var(--amber); }
+    .t-red   { color: var(--red); }
+    .t-dim   { color: #3a3a3a; }
+    .t-white { color: var(--text-pri); }
+    .t-blue  { color: var(--blue); }
+
+    @keyframes fadeInLine {
+      to { opacity: 1; }
+    }
+
+    .t-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 13px;
+      background: var(--green);
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* ─────────────────────────────────────────
+       GIT SETUP BLOCK
+    ───────────────────────────────────────── */
+    .git-block {
+      margin: 0 16px 14px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .git-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-sec);
+    }
+
+    .git-block-header .label {
+      color: var(--text-sec);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+    }
+
+    .git-block-body {
+      background: #050505;
+      padding: 10px 12px;
+    }
+
+    .git-cmd-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 3px 0;
+      font-size: 12px;
+    }
+
+    .git-prompt {
+      color: var(--text-dim);
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .git-cmd {
+      color: var(--green);
+      flex: 1;
+      word-break: break-all;
+    }
+
+    .git-output {
+      color: #2a4a2a;
+      font-size: 11px;
+      font-style: italic;
+      flex: 1;
+    }
+
+    .copy-btn {
+      font-family: var(--font);
+      font-size: 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 1px 6px;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      opacity: 0;
+    }
+
+    .git-cmd-line:hover .copy-btn {
+      opacity: 1;
+    }
+
+    .git-cmd-line:hover .copy-btn:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    /* ─────────────────────────────────────────
+       ENV VARS
+    ───────────────────────────────────────── */
+    .env-section {
+      margin: 0 16px 14px;
+      border: 1px solid var(--border);
+    }
+
+    .env-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+    }
+
+    .env-section-header .label {
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--text-sec);
+    }
+
+    .env-row {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border-dim);
+      font-size: 12px;
+    }
+
+    .env-row:last-child { border-bottom: none; }
+
+    .env-key {
+      padding: 8px 12px;
+      color: var(--amber);
+      width: 200px;
+      flex-shrink: 0;
+      font-weight: 600;
+      border-right: 1px solid var(--border-dim);
+    }
+
+    .env-val {
+      padding: 8px 12px;
+      color: var(--text-sec);
+      flex: 1;
+      font-style: italic;
+    }
+
+    .env-val.plain {
+      color: var(--text-pri);
+      font-style: normal;
+    }
+
+    .env-env-badge {
+      padding: 8px 10px;
+      font-size: 10px;
+      color: var(--text-dim);
+      border-left: 1px solid var(--border-dim);
+      flex-shrink: 0;
+    }
+
+    /* ─────────────────────────────────────────
+       OVERVIEW METRICS
+    ───────────────────────────────────────── */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin: 14px 16px 0;
+      border: 1px solid var(--border);
+    }
+
+    .metric {
+      padding: 12px 14px;
+      border-right: 1px solid var(--border);
+    }
+
+    .metric:last-child { border-right: none; }
+
+    .metric-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-pri);
+      line-height: 1.2;
+    }
+
+    .metric-value.green { color: var(--green); }
+    .metric-value.amber { color: var(--amber); }
+
+    .metric-sub {
+      font-size: 10px;
+      color: var(--text-sec);
+      margin-top: 2px;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION LABELS
+    ───────────────────────────────────────── */
+    .section-label {
+      padding: 10px 16px 6px;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-dim);
+    }
+
+    /* ─────────────────────────────────────────
+       PROGRESS BAR
+    ───────────────────────────────────────── */
+    .progress-bar {
+      height: 2px;
+      background: var(--border);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--amber);
+      animation: progress-run 3s ease-in-out infinite;
+    }
+
+    .progress-fill.done {
+      background: var(--green);
+      width: 100%;
+      animation: none;
+    }
+
+    .progress-fill.fail {
+      background: var(--red);
+      width: 22%;
+      animation: none;
+    }
+
+    @keyframes progress-run {
+      0%   { width: 0%;  margin-left: 0; }
+      50%  { width: 60%; margin-left: 20%; }
+      100% { width: 0%;  margin-left: 100%; }
+    }
+
+    /* ─────────────────────────────────────────
+       BUILD LIST ROWS
+    ───────────────────────────────────────── */
+    .build-row {
+      border: 1px solid var(--border);
+      margin-bottom: 6px;
+    }
+
+    .build-row-header {
+      display: flex;
+      align-items: center;
+      padding: 9px 12px;
+      gap: 10px;
+      background: var(--bg-subtle);
+    }
+
+    .build-num { font-size: 10px; color: var(--text-dim); }
+    .build-msg { font-size: 11px; color: var(--text-pri); flex: 1; }
+    .build-sha { font-size: 10px; color: var(--text-dim); }
+    .build-age { font-size: 10px; color: var(--text-sec); }
+    .build-dur { font-size: 10px; }
+
+    /* ─────────────────────────────────────────
+       STATUS BAR
+    ───────────────────────────────────────── */
+    .statusbar {
+      height: 24px;
+      background: var(--green-muted);
+      border-top: 1px solid var(--green-dim);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .statusbar-item {
+      font-size: 10px;
+      color: var(--green-dim);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      letter-spacing: 0.05em;
+    }
+
+    .statusbar-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse-green 2s ease-in-out infinite;
+    }
+
+    .statusbar-sep { color: #003010; user-select: none; }
+
+    .statusbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .build-live-dot {
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: pulse-amber 0.8s ease-in-out infinite;
+    }
+
+    /* ─────────────────────────────────────────
+       SETTINGS
+    ───────────────────────────────────────── */
+    .settings-field {
+      border: 1px solid var(--border);
+      padding: 14px;
+      margin-bottom: 8px;
+    }
+
+    .settings-field-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .settings-field-value {
+      font-size: 13px;
+      color: var(--text-pri);
+    }
+
+    .settings-field-value.code { color: var(--green); }
+
+    .danger-zone {
+      border: 1px solid var(--red-muted);
+      padding: 14px;
+      margin-top: 16px;
+    }
+
+    .danger-label {
+      font-size: 10px;
+      color: var(--red);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .danger-desc {
+      font-size: 11px;
+      color: var(--text-sec);
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══════════════════════════════════════
+       TOP BAR
+  ═══════════════════════════════════════ -->
+  <header class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-icon"></div>
+      <span class="logo-text">KumbulaCloud</span>
+    </div>
+    <div class="topbar-sep"></div>
+    <nav class="breadcrumbs">
+      <a href="#">~</a>
+      <span class="sep">/</span>
+      <a href="#">projects</a>
+      <span class="sep">/</span>
+      <span class="current">api-gateway</span>
+    </nav>
+    <div class="topbar-actions">
+      <div class="topbar-kbd">
+        <kbd>Ctrl</kbd><kbd>K</kbd>
+        <span style="margin-left:4px;">command</span>
+      </div>
+      <div class="topbar-sep"></div>
+      <span style="font-size:11px;color:var(--text-sec);">grantm</span>
+      <div class="avatar">GM</div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════
+       COMMAND BAR
+  ═══════════════════════════════════════ -->
+  <div class="cmdbar-wrap">
+    <div class="cmdbar" id="cmdbar">
+      <span class="cmdbar-prompt">$</span>
+      <input
+        type="text"
+        id="cmdInput"
+        placeholder='Type a command or search...   e.g. "new project", "deploy api-gateway", "view logs"'
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <div class="cmdbar-hint">
+        <span><kbd>up/dn</kbd> navigate</span>
+        <span><kbd>enter</kbd> execute</span>
+        <span><kbd>esc</kbd> dismiss</span>
+      </div>
+      <div class="cmdbar-suggestions" id="cmdSuggestions" style="display:none;">
+        <div class="cmd-suggestion active">
+          <span class="cmd-icon">&#9654;</span>
+          <span class="cmd-label">new project</span>
+          <span class="cmd-badge">action</span>
+        </div>
+        <div class="cmd-suggestion">
+          <span class="cmd-icon">&#8635;</span>
+          <span class="cmd-label">deploy api-gateway</span>
+          <span class="cmd-badge">deploy</span>
+        </div>
+        <div class="cmd-suggestion">
+          <span class="cmd-icon">&#8801;</span>
+          <span class="cmd-label">view logs &mdash; api-gateway</span>
+          <span class="cmd-badge">logs</span>
+        </div>
+        <div class="cmd-suggestion">
+          <span class="cmd-icon">&#8853;</span>
+          <span class="cmd-label">add env var</span>
+          <span class="cmd-badge">env</span>
+        </div>
+        <div class="cmd-suggestion">
+          <span class="cmd-icon">?</span>
+          <span class="cmd-label">help &mdash; show all commands</span>
+          <span class="cmd-badge">help</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════ -->
+  <div class="main">
+
+    <!-- ─────────────────────────────────────
+         LEFT: PROJECTS TABLE
+    ───────────────────────────────────────── -->
+    <div class="projects-panel">
+      <div class="panel-header">
+        <span class="panel-title">
+          projects
+          <span class="count">// 7 total</span>
+        </span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;">filter</button>
+          <button class="btn btn-green">+ new project</button>
+        </div>
+      </div>
+
+      <div class="projects-table-wrap">
+        <table class="projects-table">
+          <thead>
+            <tr>
+              <th style="width:260px;">NAME / REPO</th>
+              <th style="width:110px;">STATUS</th>
+              <th style="width:190px;">URL</th>
+              <th style="width:130px;">LAST DEPLOY</th>
+              <th style="width:90px;">COMMIT</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr class="proj-row selected" onclick="selectProject(this)">
+              <td><div class="proj-cell proj-name-cell">
+                <div class="proj-name"><span class="arrow">&#9654;</span> api-gateway</div>
+                <div class="proj-sub">github.com/grantm/api-gateway</div>
+              </div></td>
+              <td><div class="proj-cell">
+                <span class="status-badge status-running"><span class="status-dot"></span>running</span>
+              </div></td>
+              <td><div class="proj-cell">
+                <a class="proj-url" href="#">api-gateway.kumbula.app</a>
+              </div></td>
+              <td><div class="proj-cell proj-meta">2 min ago</div></td>
+              <td><div class="proj-cell proj-sha">a3f9c21</div></td>
+              <td><div class="proj-cell"><div class="proj-actions">
+                <button class="icon-btn">logs</button>
+                <button class="icon-btn">&#8635;</button>
+                <button class="icon-btn">&#183;&#183;&#183;</button>
+              </div></div></td>
+            </tr>
+
+            <tr class="proj-row" onclick="selectProject(this)">
+              <td><div class="proj-cell proj-name-cell">
+                <div class="proj-name"><span class="arrow">&#183;</span> ml-inference</div>
+                <div class="proj-sub">github.com/grantm/ml-inference</div>
+              </div></td>
+              <td><div class="proj-cell">
+                <span class="status-badge status-building"><span class="status-dot"></span>building</span>
+              </div></td>
+              <td><div class="proj-cell">
+                <a class="proj-url" href="#">ml-inference.kumbula.app</a>
+              </div></td>
+              <td><div class="proj-cell proj-meta">building&hellip;</div></td>
+              <td><div class="proj-cell proj-sha">d7b8e44</div></td>
+              <td><div class="proj-cell"><div class="proj-actions">
+                <button class="icon-btn">logs</button>
+                <button class="icon-btn">&#215;</button>
+                <button class="icon-btn">&#183;&#183;&#183;</button>
+              </div></div></td>
+            </tr>
+
+            <tr class="proj-row" onclick="selectProject(this)">
+              <td><div class="proj-cell proj-name-cell">
+                <div class="proj-name"><span class="arrow">&#183;</span> data-pipeline</div>
+                <div class="proj-sub">github.com/grantm/data-pipeline</div>
+              </div></td>
+              <td><div class="proj-cell">
+                <span class="status-badge status-failed"><span class="status-dot"></span>failed</span>
+              </div></td>
+              <td><div class="proj-cell">
+                <a class="proj-url" href="#">data-pipeline.kumbula.app</a>
+              </div></td>
+              <td><div class="proj-cell proj-meta">18 min ago</div></td>
+              <td><div class="proj-cell proj-sha">9e2a105</div></td>
+              <td><div class="proj-cell"><div class="proj-actions">
+                <button class="icon-btn">logs</button>
+                <button class="icon-btn">&#8635;</button>
+                <button class="icon-btn">&#183;&#183;&#183;</button>
+              </div></div></td>
+            </tr>
+
+            <tr class="proj-row" onclick="selectProject(this)">
+              <td><div class="proj-cell proj-name-cell">
+                <div class="proj-name"><span class="arrow">&#183;</span> frontend-app</div>
+                <div class="proj-sub">github.com/grantm/frontend-app</div>
+              </div></td>
+              <td><div class="proj-cell">
+                <span class="status-badge status-running"><span class="status-dot"></span>running</span>
+              </div></td>
+              <td><div class="proj-cell">
+                <a class="proj-url" href="#">frontend-app.kumbula.app</a>
+              </div></td>
+              <td><div class="proj-cell proj-meta">1 hr ago</div></td>
+              <td><div class="proj-cell proj-sha">c1d4f88</div></td>
+              <td><div class="proj-cell"><div class="proj-actions">
+                <button class="icon-btn">logs</button>
+                <button class="icon-btn">&#8635;</button>
+                <button class="icon-btn">&#183;&#183;&#183;</button>
+              </div></div></td>
+            </tr>
+
+            <tr class="proj-row" onclick="selectProject(this)">
+              <td><div class="proj-cell proj-name-cell">
+                <div class="proj-name"><span class="arrow">&#183;</span> auth-service</div>
+                <div class="proj-sub">github.com/grantm/auth-service</div>
+              </div></td>
+              <td><div class="proj-cell">
+                <span class="status-badge status-running"><span class="status-dot"></span>running</span>
+              </div></td>
+              <td><div class="proj-cell">
+                <a class="proj-url" href="#">auth-service.kumbula.app</a>
+              </div></td>
+              <td><div class="proj-cell proj-meta">3 hrs ago</div></td>
+              <td><div class="proj-cell proj-sha">4ab7209</div></td>
+              <td><div class="proj-cell"><div class="proj-actions">
+                <button class="icon-btn">logs</button>
+                <button class="icon-btn">&#8635;</button>
+                <button class="icon-btn">&#183;&#183;&#183;</button>
+              </div></div></td>
+            </tr>
+
+            <tr class="proj-row" onclick="selectProject(this)">
+              <td><div class="proj-cell proj-name-cell">
+                <div class="proj-name"><span class="arrow">&#183;</span> worker-queue</div>
+                <div class="proj-sub">github.com/grantm/worker-queue</div>
+              </div></td>
+              <td><div class="proj-cell">
+                <span class="status-badge status-stopped"><span class="status-dot"></span>stopped</span>
+              </div></td>
+              <td><div class="proj-cell">
+                <a class="proj-url" href="#" style="color:var(--text-sec);">worker-queue.kumbula.app</a>
+              </div></td>
+              <td><div class="proj-cell proj-meta">2 days ago</div></td>
+              <td><div class="proj-cell proj-sha">8fc3d62</div></td>
+              <td><div class="proj-cell"><div class="proj-actions">
+                <button class="icon-btn">logs</button>
+                <button class="icon-btn">&#9654;</button>
+                <button class="icon-btn">&#183;&#183;&#183;</button>
+              </div></div></td>
+            </tr>
+
+            <tr class="proj-row" onclick="selectProject(this)">
+              <td><div class="proj-cell proj-name-cell">
+                <div class="proj-name"><span class="arrow">&#183;</span> metrics-db</div>
+                <div class="proj-sub">github.com/grantm/metrics-db</div>
+              </div></td>
+              <td><div class="proj-cell">
+                <span class="status-badge status-running"><span class="status-dot"></span>running</span>
+              </div></td>
+              <td><div class="proj-cell">
+                <a class="proj-url" href="#">metrics-db.kumbula.app</a>
+              </div></td>
+              <td><div class="proj-cell proj-meta">5 hrs ago</div></td>
+              <td><div class="proj-cell proj-sha">22e91af</div></td>
+              <td><div class="proj-cell"><div class="proj-actions">
+                <button class="icon-btn">logs</button>
+                <button class="icon-btn">&#8635;</button>
+                <button class="icon-btn">&#183;&#183;&#183;</button>
+              </div></div></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /projects-panel -->
+
+    <!-- ─────────────────────────────────────
+         RIGHT: PROJECT DETAIL
+    ───────────────────────────────────────── -->
+    <div class="detail-panel">
+
+      <div class="detail-header">
+        <div class="detail-proj-name">
+          api-gateway
+          <span class="badge">production</span>
+          <span class="status-badge status-running" style="margin-left:auto;">
+            <span class="status-dot"></span>running
+          </span>
+        </div>
+        <div class="detail-proj-url">
+          <span>&#8599;</span>
+          <a href="#" style="color:var(--blue);text-decoration:none;font-size:11px;">https://api-gateway.kumbula.app</a>
+        </div>
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(this,'overview')">Overview</button>
+          <button class="tab" onclick="switchTab(this,'builds')">Builds</button>
+          <button class="tab" onclick="switchTab(this,'env')">Environment</button>
+          <button class="tab" onclick="switchTab(this,'settings')">Settings</button>
+        </div>
+      </div>
+
+      <div class="detail-body" id="detailBody">
+
+        <!-- ── OVERVIEW TAB ── -->
+        <div id="tab-overview">
+
+          <div class="metrics-row">
+            <div class="metric">
+              <div class="metric-label">uptime</div>
+              <div class="metric-value green">99.97<span style="font-size:11px;color:var(--green-dim);">%</span></div>
+              <div class="metric-sub">last 30 days</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">deploys</div>
+              <div class="metric-value">34</div>
+              <div class="metric-sub">this month</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">build time</div>
+              <div class="metric-value amber">1m 47s</div>
+              <div class="metric-sub">avg last 10</div>
+            </div>
+          </div>
+
+          <div class="section-label">latest build</div>
+
+          <div style="margin:0 16px 2px;display:flex;align-items:center;gap:8px;">
+            <div class="progress-bar" style="flex:1;">
+              <div class="progress-fill done"></div>
+            </div>
+            <span style="font-size:10px;color:var(--green-dim);">success &middot; 1m 52s</span>
+          </div>
+
+          <div class="terminal">
+            <div class="terminal-titlebar">
+              <div class="term-dot term-dot-red"></div>
+              <div class="term-dot term-dot-amber"></div>
+              <div class="term-dot term-dot-green"></div>
+              <span class="terminal-titlebar-text">build #47 &mdash; api-gateway &mdash; commit a3f9c21</span>
+              <span class="terminal-titlebar-badge">&#10003; SUCCESS</span>
+            </div>
+            <div class="terminal-body" id="buildLog"></div>
+          </div>
+
+          <div class="section-label">git remote</div>
+
+          <div class="git-block">
+            <div class="git-block-header">
+              <span class="label">connect your repository</span>
+              <span style="color:var(--text-dim);font-size:10px;">ssh &middot; https</span>
+            </div>
+            <div class="git-block-body" id="gitCmds"></div>
+          </div>
+
+        </div><!-- /tab-overview -->
+
+        <!-- ── BUILDS TAB ── -->
+        <div id="tab-builds" style="display:none;">
+          <div class="section-label">build history</div>
+          <div style="margin:0 16px;" id="buildList"></div>
+        </div>
+
+        <!-- ── ENV TAB ── -->
+        <div id="tab-env" style="display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px;">
+            <div class="section-label" style="padding:0;flex:1;">environment variables</div>
+            <button class="btn btn-green" style="font-size:10px;padding:3px 8px;margin-left:12px;">+ add variable</button>
+          </div>
+          <div class="env-section" id="envProdSection"></div>
+          <div class="section-label">staging</div>
+          <div class="env-section" style="margin-top:0;" id="envStagSection"></div>
+        </div>
+
+        <!-- ── SETTINGS TAB ── -->
+        <div id="tab-settings" style="display:none;">
+          <div class="section-label">project settings</div>
+          <div style="margin:0 16px;" id="settingsBody"></div>
+        </div>
+
+      </div><!-- /detail-body -->
+    </div><!-- /detail-panel -->
+
+  </div><!-- /main -->
+
+  <!-- ═══════════════════════════════════════
+       STATUS BAR
+  ═══════════════════════════════════════ -->
+  <footer class="statusbar">
+    <div class="statusbar-item">
+      <span class="statusbar-dot"></span>
+      connected
+    </div>
+    <span class="statusbar-sep">|</span>
+    <div class="statusbar-item">region: eu-west-1</div>
+    <span class="statusbar-sep">|</span>
+    <div class="statusbar-item">7 projects</div>
+    <span class="statusbar-sep">|</span>
+    <div class="statusbar-item">4 running</div>
+    <div class="statusbar-right">
+      <div class="statusbar-item">
+        <span class="build-live-dot"></span>
+        build in progress &mdash; ml-inference
+      </div>
+      <span class="statusbar-sep">|</span>
+      <div class="statusbar-item">04 Apr 2026 &middot; 14:32 UTC</div>
+    </div>
+  </footer>
+
+</div><!-- /shell -->
+
+<script>
+(function () {
+  /* ───────────────────────────────
+     BUILD LOG
+  ─────────────────────────────── */
+  var LOG_LINES = [
+    { ts: '[14:30:09]', cls: 't-dim',   text: '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500' },
+    { ts: '[14:30:09]', cls: 't-green', text: 'KumbulaCloud build agent v2.4.1 \u2014 ready' },
+    { ts: '[14:30:09]', cls: 't-white', text: 'project: api-gateway  branch: main  commit: a3f9c21' },
+    { ts: '[14:30:09]', cls: 't-dim',   text: '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500' },
+    { ts: '[14:30:10]', cls: 't-white', text: 'Cloning repository...' },
+    { ts: '[14:30:11]', cls: 't-dim',   text: '  remote: Counting objects: 143, done.' },
+    { ts: '[14:30:11]', cls: 't-dim',   text: '  remote: Compressing objects: 100% (98/98), done.' },
+    { ts: '[14:30:12]', cls: 't-dim',   text: '  Receiving objects: 100% (143/143), 1.24 MiB | 44 MiB/s, done.' },
+    { ts: '[14:30:12]', cls: 't-green', text: 'Repository cloned successfully' },
+    { ts: '[14:30:13]', cls: 't-white', text: 'Detecting runtime... Node.js 20.x detected' },
+    { ts: '[14:30:13]', cls: 't-white', text: 'Installing dependencies...' },
+    { ts: '[14:30:27]', cls: 't-dim',   text: '  added 847 packages in 14.2s' },
+    { ts: '[14:30:27]', cls: 't-green', text: 'Dependencies installed (14.2s)' },
+    { ts: '[14:30:27]', cls: 't-white', text: 'Running build command: npm run build' },
+    { ts: '[14:30:28]', cls: 't-dim',   text: '  > api-gateway@3.1.0 build' },
+    { ts: '[14:30:28]', cls: 't-dim',   text: '  > tsc && node esbuild.config.js' },
+    { ts: '[14:30:39]', cls: 't-dim',   text: '  \u2713 TypeScript compiled (10.4s)' },
+    { ts: '[14:30:42]', cls: 't-dim',   text: '  \u2713 Bundle optimised \u2014 dist/ 284KB (gzip: 76KB)' },
+    { ts: '[14:30:43]', cls: 't-green', text: 'Build succeeded in 1m 34s' },
+    { ts: '[14:30:43]', cls: 't-white', text: 'Packaging image...' },
+    { ts: '[14:30:51]', cls: 't-dim',   text: '  Pushing to registry.kumbula.app/grantm/api-gateway:a3f9c21' },
+    { ts: '[14:30:58]', cls: 't-green', text: 'Image pushed to registry (8.3s)' },
+    { ts: '[14:30:58]', cls: 't-white', text: 'Deploying to production (eu-west-1)...' },
+    { ts: '[14:31:01]', cls: 't-dim',   text: '  Health check \u2014 waiting for container to become ready' },
+    { ts: '[14:31:04]', cls: 't-dim',   text: '  GET /health \u2192 200 OK (32ms)' },
+    { ts: '[14:31:04]', cls: 't-green', text: 'Deployment complete. Traffic routed to new instance.' },
+    { ts: '[14:31:04]', cls: 't-dim',   text: '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500' },
+    { ts: '[14:31:04]', cls: 't-green', text: '\u2713 Build #47 succeeded in 1m 52s' }
+  ];
+
+  function renderBuildLog() {
+    var container = document.getElementById('buildLog');
+    if (!container) return;
+
+    LOG_LINES.forEach(function (line, i) {
+      var row = document.createElement('div');
+      row.className = 't-line';
+      row.style.animationDelay = (i * 55) + 'ms';
+
+      var ts = document.createElement('span');
+      ts.className = 't-ts';
+      ts.textContent = line.ts;
+
+      var txt = document.createElement('span');
+      txt.className = line.cls;
+      txt.textContent = line.text;
+
+      row.appendChild(ts);
+      row.appendChild(txt);
+      container.appendChild(row);
+    });
+
+    // blinking cursor line
+    var cursorRow = document.createElement('div');
+    cursorRow.className = 't-line';
+    cursorRow.style.animationDelay = (LOG_LINES.length * 55) + 'ms';
+    cursorRow.style.marginTop = '4px';
+
+    var tsBlank = document.createElement('span');
+    tsBlank.className = 't-ts';
+
+    var promptSpan = document.createElement('span');
+    promptSpan.className = 't-green';
+    promptSpan.textContent = '$ ';
+
+    var cursor = document.createElement('span');
+    cursor.className = 't-cursor';
+
+    promptSpan.appendChild(cursor);
+    cursorRow.appendChild(tsBlank);
+    cursorRow.appendChild(promptSpan);
+    container.appendChild(cursorRow);
+  }
+
+  /* ───────────────────────────────
+     GIT COMMANDS
+  ─────────────────────────────── */
+  function renderGitCmds() {
+    var container = document.getElementById('gitCmds');
+    if (!container) return;
+
+    var commands = [
+      'git remote add kumbula git@deploy.kumbula.app:grantm/api-gateway.git',
+      'git push kumbula main'
+    ];
+
+    var outputs = [
+      null,
+      'remote: Build queued \u2014 https://kumbula.app/builds/bld-a3f9c21'
+    ];
+
+    commands.forEach(function (cmd, i) {
+      var row = document.createElement('div');
+      row.className = 'git-cmd-line';
+
+      var prompt = document.createElement('span');
+      prompt.className = 'git-prompt';
+      prompt.textContent = '$';
+
+      var cmdSpan = document.createElement('span');
+      cmdSpan.className = 'git-cmd';
+      cmdSpan.textContent = cmd;
+
+      var copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-btn';
+      copyBtn.textContent = 'copy';
+      copyBtn.setAttribute('data-cmd', cmd);
+      copyBtn.addEventListener('click', function () {
+        var c = this.getAttribute('data-cmd');
+        navigator.clipboard.writeText(c).catch(function () {});
+        var btn = this;
+        btn.textContent = 'copied!';
+        btn.style.color = 'var(--green)';
+        btn.style.borderColor = 'var(--green)';
+        setTimeout(function () {
+          btn.textContent = 'copy';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }, 1500);
+      });
+
+      row.appendChild(prompt);
+      row.appendChild(cmdSpan);
+      row.appendChild(copyBtn);
+      container.appendChild(row);
+
+      if (outputs[i]) {
+        var outRow = document.createElement('div');
+        outRow.className = 'git-cmd-line';
+
+        var arrow = document.createElement('span');
+        arrow.className = 'git-prompt';
+        arrow.style.color = '#1e1e1e';
+        arrow.textContent = '\u2192';
+
+        var outSpan = document.createElement('span');
+        outSpan.className = 'git-output';
+        outSpan.textContent = outputs[i];
+
+        outRow.appendChild(arrow);
+        outRow.appendChild(outSpan);
+        container.appendChild(outRow);
+      }
+    });
+  }
+
+  /* ───────────────────────────────
+     BUILDS LIST
+  ─────────────────────────────── */
+  function renderBuilds() {
+    var container = document.getElementById('buildList');
+    if (!container) return;
+
+    var builds = [
+      { num: '#47', status: 'success', statusCls: 'status-running', msg: 'feat: add rate limiting middleware', sha: 'a3f9c21', age: '2 min ago', dur: '1m 52s', durCls: 'green', barCls: 'done' },
+      { num: '#46', status: 'success', statusCls: 'status-running', msg: 'refactor: consolidate auth handlers',  sha: '8b1ec03', age: '3 hrs ago', dur: '1m 44s', durCls: 'green', barCls: 'done' },
+      { num: '#45', status: 'failed',  statusCls: 'status-failed',  msg: 'fix: update JWT secret env binding',  sha: 'f20c489', age: '5 hrs ago', dur: '0m 34s', durCls: 'red',   barCls: 'fail' },
+      { num: '#44', status: 'success', statusCls: 'status-running', msg: 'chore: bump dependencies to latest',  sha: '7a9d301', age: '1 day ago', dur: '2m 11s', durCls: 'green', barCls: 'done' }
+    ];
+
+    builds.forEach(function (b) {
+      var wrap = document.createElement('div');
+      wrap.className = 'build-row';
+
+      var header = document.createElement('div');
+      header.className = 'build-row-header';
+
+      var num = document.createElement('span');
+      num.className = 'build-num';
+      num.textContent = b.num;
+
+      var badge = document.createElement('span');
+      badge.className = 'status-badge ' + b.statusCls;
+      var dot = document.createElement('span');
+      dot.className = 'status-dot';
+      var badgeText = document.createTextNode(b.status);
+      badge.appendChild(dot);
+      badge.appendChild(badgeText);
+
+      var msg = document.createElement('span');
+      msg.className = 'build-msg';
+      msg.textContent = b.msg;
+
+      var sha = document.createElement('span');
+      sha.className = 'build-sha';
+      sha.textContent = b.sha;
+
+      var age = document.createElement('span');
+      age.className = 'build-age';
+      age.textContent = b.age;
+
+      var dur = document.createElement('span');
+      dur.className = 'build-dur';
+      dur.style.color = 'var(--' + b.durCls + ')';
+      dur.textContent = b.dur;
+
+      header.appendChild(num);
+      header.appendChild(badge);
+      header.appendChild(msg);
+      header.appendChild(sha);
+      header.appendChild(age);
+      header.appendChild(dur);
+      wrap.appendChild(header);
+
+      var bar = document.createElement('div');
+      bar.className = 'progress-bar';
+      var fill = document.createElement('div');
+      fill.className = 'progress-fill ' + b.barCls;
+      bar.appendChild(fill);
+      wrap.appendChild(bar);
+
+      container.appendChild(wrap);
+    });
+  }
+
+  /* ───────────────────────────────
+     ENV VARS
+  ─────────────────────────────── */
+  function buildEnvSection(containerId, label, vars) {
+    var section = document.getElementById(containerId);
+    if (!section) return;
+
+    var hdr = document.createElement('div');
+    hdr.className = 'env-section-header';
+
+    var lbl = document.createElement('span');
+    lbl.className = 'label';
+    lbl.textContent = label;
+
+    var toggle = document.createElement('span');
+    toggle.style.fontSize = '10px';
+    toggle.style.color = 'var(--text-dim)';
+    toggle.textContent = 'reveal all';
+
+    hdr.appendChild(lbl);
+    hdr.appendChild(toggle);
+    section.appendChild(hdr);
+
+    vars.forEach(function (v) {
+      var row = document.createElement('div');
+      row.className = 'env-row';
+
+      var key = document.createElement('div');
+      key.className = 'env-key';
+      key.textContent = v.key;
+
+      var val = document.createElement('div');
+      val.className = v.plain ? 'env-val plain' : 'env-val';
+      val.textContent = v.val;
+
+      var env = document.createElement('div');
+      env.className = 'env-env-badge';
+      env.textContent = v.env;
+
+      row.appendChild(key);
+      row.appendChild(val);
+      row.appendChild(env);
+      section.appendChild(row);
+    });
+  }
+
+  /* ───────────────────────────────
+     SETTINGS
+  ─────────────────────────────── */
+  function renderSettings() {
+    var body = document.getElementById('settingsBody');
+    if (!body) return;
+
+    var fields = [
+      { label: 'project name',    value: 'api-gateway',      code: false },
+      { label: 'build command',   value: 'npm run build',    code: true  },
+      { label: 'start command',   value: 'node dist/index.js', code: true }
+    ];
+
+    fields.forEach(function (f) {
+      var wrap = document.createElement('div');
+      wrap.className = 'settings-field';
+
+      var lbl = document.createElement('div');
+      lbl.className = 'settings-field-label';
+      lbl.textContent = f.label;
+
+      var val = document.createElement('div');
+      val.className = f.code ? 'settings-field-value code' : 'settings-field-value';
+      val.textContent = f.value;
+
+      wrap.appendChild(lbl);
+      wrap.appendChild(val);
+      body.appendChild(wrap);
+    });
+
+    var danger = document.createElement('div');
+    danger.className = 'danger-zone';
+
+    var dlbl = document.createElement('div');
+    dlbl.className = 'danger-label';
+    dlbl.textContent = 'danger zone';
+
+    var ddesc = document.createElement('div');
+    ddesc.className = 'danger-desc';
+    ddesc.textContent = 'Deleting a project is irreversible. All builds, logs and config will be permanently removed.';
+
+    var dBtn = document.createElement('button');
+    dBtn.className = 'btn';
+    dBtn.style.borderColor = 'var(--red)';
+    dBtn.style.color = 'var(--red)';
+    dBtn.style.fontSize = '11px';
+    dBtn.textContent = 'delete project';
+
+    danger.appendChild(dlbl);
+    danger.appendChild(ddesc);
+    danger.appendChild(dBtn);
+    body.appendChild(danger);
+  }
+
+  /* ───────────────────────────────
+     INIT ALL CONTENT
+  ─────────────────────────────── */
+  renderBuildLog();
+  renderGitCmds();
+  renderBuilds();
+
+  buildEnvSection('envProdSection', 'production \u2014 6 variables', [
+    { key: 'DATABASE_URL', val: 'postgres://***:***@db.kumbula.app:5432/api_gw_prod',  env: 'prod',  plain: false },
+    { key: 'JWT_SECRET',   val: '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022', env: 'prod',  plain: false },
+    { key: 'PORT',         val: '8080',        env: 'all',   plain: true  },
+    { key: 'NODE_ENV',     val: 'production',  env: 'prod',  plain: true  },
+    { key: 'REDIS_URL',    val: 'redis://***:***@cache.kumbula.app:6379',               env: 'prod',  plain: false },
+    { key: 'LOG_LEVEL',    val: 'info',        env: 'all',   plain: true  }
+  ]);
+
+  buildEnvSection('envStagSection', 'staging \u2014 2 variables', [
+    { key: 'DATABASE_URL', val: 'postgres://***:***@db.kumbula.app:5432/api_gw_staging', env: 'stg', plain: false },
+    { key: 'NODE_ENV',     val: 'staging',     env: 'stg',   plain: true  }
+  ]);
+
+  renderSettings();
+
+  /* ───────────────────────────────
+     TAB SWITCHING
+  ─────────────────────────────── */
+  function switchTab(btn, tabId) {
+    document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+    btn.classList.add('active');
+    ['overview','builds','env','settings'].forEach(function (id) {
+      var el = document.getElementById('tab-' + id);
+      if (el) el.style.display = 'none';
+    });
+    var target = document.getElementById('tab-' + tabId);
+    if (target) target.style.display = 'block';
+  }
+
+  window.switchTab = switchTab;
+
+  /* ───────────────────────────────
+     PROJECT ROW SELECTION
+  ─────────────────────────────── */
+  function selectProject(row) {
+    document.querySelectorAll('.proj-row').forEach(function (r) {
+      r.classList.remove('selected');
+      r.querySelectorAll('.arrow').forEach(function (a) { a.textContent = '\u00B7'; });
+    });
+    row.classList.add('selected');
+    row.querySelectorAll('.arrow').forEach(function (a) { a.textContent = '\u25B6'; });
+  }
+
+  window.selectProject = selectProject;
+
+  /* ───────────────────────────────
+     COMMAND BAR
+  ─────────────────────────────── */
+  var cmdInput = document.getElementById('cmdInput');
+  var cmdSuggestions = document.getElementById('cmdSuggestions');
+  var cmdbar = document.getElementById('cmdbar');
+
+  if (cmdInput && cmdSuggestions && cmdbar) {
+    cmdInput.addEventListener('focus', function () {
+      cmdbar.style.boxShadow = '0 0 24px rgba(0,255,65,0.18), inset 0 0 20px rgba(0,255,65,0.04)';
+      cmdSuggestions.style.display = 'block';
+    });
+
+    cmdInput.addEventListener('blur', function () {
+      cmdbar.style.boxShadow = '0 0 12px rgba(0,255,65,0.08), inset 0 0 20px rgba(0,255,65,0.02)';
+      setTimeout(function () { cmdSuggestions.style.display = 'none'; }, 200);
+    });
+
+    var suggestions = document.querySelectorAll('.cmd-suggestion');
+    var activeIdx = 0;
+
+    cmdInput.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        suggestions[activeIdx].classList.remove('active');
+        activeIdx = (activeIdx + 1) % suggestions.length;
+        suggestions[activeIdx].classList.add('active');
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        suggestions[activeIdx].classList.remove('active');
+        activeIdx = (activeIdx - 1 + suggestions.length) % suggestions.length;
+        suggestions[activeIdx].classList.add('active');
+      } else if (e.key === 'Escape') {
+        cmdInput.blur();
+      }
+    });
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      if (cmdInput) { cmdInput.focus(); cmdInput.select(); }
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>

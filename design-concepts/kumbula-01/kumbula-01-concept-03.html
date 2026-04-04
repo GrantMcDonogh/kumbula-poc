@@ -1,0 +1,1310 @@
+<!-- Concept 3: Visual Style — Glassmorphism Aurora -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KumbulaCloud — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      background: #0e0118;
+      color: #e2dff0;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ─── Animated Gradient Mesh Background ────────────────────────────── */
+    .aurora-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: #0e0118;
+      overflow: hidden;
+    }
+
+    .aurora-bg::before {
+      content: '';
+      position: absolute;
+      inset: -50%;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(139,92,246,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 70% at 80% 10%, rgba(0,212,170,0.25) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 50% 80%, rgba(255,107,157,0.2) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 80% at 90% 70%, rgba(10,42,42,0.8) 0%, transparent 50%),
+        radial-gradient(ellipse 90% 40% at 10% 90%, rgba(26,5,51,0.9) 0%, transparent 60%);
+      animation: auroraShift 18s ease-in-out infinite alternate;
+    }
+
+    .aurora-bg::after {
+      content: '';
+      position: absolute;
+      inset: -50%;
+      background:
+        radial-gradient(ellipse 55% 65% at 70% 40%, rgba(0,212,170,0.18) 0%, transparent 50%),
+        radial-gradient(ellipse 65% 45% at 30% 70%, rgba(139,92,246,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 60% at 60% 90%, rgba(255,107,157,0.15) 0%, transparent 50%);
+      animation: auroraShift2 22s ease-in-out infinite alternate;
+    }
+
+    @keyframes auroraShift {
+      0%   { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(3%, -4%) scale(1.05); }
+      66%  { transform: translate(-4%, 3%) scale(0.97); }
+      100% { transform: translate(2%, 5%) scale(1.03); }
+    }
+
+    @keyframes auroraShift2 {
+      0%   { transform: translate(0, 0) rotate(0deg); }
+      50%  { transform: translate(-5%, 4%) rotate(3deg); }
+      100% { transform: translate(4%, -3%) rotate(-2deg); }
+    }
+
+    /* Noise texture overlay */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      opacity: 0.025;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 180px 180px;
+    }
+
+    /* ─── Layout Shell ──────────────────────────────────────────────────── */
+    .shell {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Glass Mixin (via custom props) ────────────────────────────────── */
+    .glass {
+      background: rgba(255, 255, 255, 0.055);
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+    }
+
+    /* ─── Top Navigation Bar ────────────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(14, 1, 24, 0.55);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      gap: 0;
+      box-shadow: 0 1px 0 rgba(139,92,246,0.12), 0 8px 32px rgba(0,0,0,0.4);
+      animation: fadeDown 0.5s ease both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .navbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      margin-right: 40px;
+    }
+
+    .navbar-logo-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #00d4aa 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 18px rgba(139,92,246,0.6), 0 0 36px rgba(0,212,170,0.25);
+      flex-shrink: 0;
+    }
+
+    .navbar-logo-icon svg { width: 18px; height: 18px; }
+
+    .navbar-logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      background: linear-gradient(90deg, #c4b5fd 0%, #00d4aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.01em;
+    }
+
+    .navbar-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .nav-link {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(226, 223, 240, 0.55);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .nav-link:hover {
+      color: rgba(226, 223, 240, 0.95);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .nav-link.active {
+      color: #e2dff0;
+      background: rgba(139,92,246,0.18);
+      border: 1px solid rgba(139,92,246,0.22);
+    }
+
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .navbar-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8b5cf6, #ff6b9d);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: #fff;
+      cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.15);
+      box-shadow: 0 0 12px rgba(139,92,246,0.4);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .navbar-avatar:hover {
+      box-shadow: 0 0 20px rgba(139,92,246,0.65);
+      transform: scale(1.06);
+    }
+
+    .btn-nav-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: rgba(226,223,240,0.6);
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .btn-nav-icon:hover {
+      background: rgba(255,255,255,0.1);
+      color: #e2dff0;
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    .btn-nav-icon svg { width: 16px; height: 16px; }
+
+    /* ─── Main Content ──────────────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 48px 40px 80px;
+    }
+
+    /* ─── Page Header ───────────────────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      animation: fadeUp 0.55s ease 0.1s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-title-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .page-eyebrow {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #00d4aa;
+      opacity: 0.8;
+    }
+
+    .page-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(90deg, #e2dff0 0%, #c4b5fd 60%, #00d4aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.15;
+    }
+
+    .page-subtitle {
+      font-size: 0.9rem;
+      color: rgba(226,223,240,0.45);
+      margin-top: 2px;
+    }
+
+    /* ─── New Project Button ────────────────────────────────────────────── */
+    .btn-new-project {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 12px;
+      border: 1px solid rgba(139,92,246,0.4);
+      background: rgba(139,92,246,0.18);
+      color: #c4b5fd;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.25s, border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+      box-shadow: 0 0 18px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-new-project::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(0,212,170,0.15));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .btn-new-project:hover {
+      background: rgba(139,92,246,0.28);
+      border-color: rgba(139,92,246,0.65);
+      box-shadow: 0 0 30px rgba(139,92,246,0.38), 0 0 60px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+    }
+
+    .btn-new-project:hover::before { opacity: 1; }
+
+    .btn-new-project svg {
+      width: 16px;
+      height: 16px;
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+
+    .btn-new-project span { position: relative; z-index: 1; }
+
+    /* ─── Stats Row ─────────────────────────────────────────────────────── */
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 36px;
+      animation: fadeUp 0.55s ease 0.18s both;
+    }
+
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    .stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .stat-dot.green  { background: #00d4aa; box-shadow: 0 0 8px rgba(0,212,170,0.8); }
+    .stat-dot.orange { background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.8); }
+    .stat-dot.red    { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.8); }
+
+    .stat-label { font-size: 0.82rem; color: rgba(226,223,240,0.55); }
+    .stat-val   { font-family: 'Outfit', sans-serif; font-size: 0.88rem; font-weight: 600; color: #e2dff0; margin-left: 2px; }
+
+    /* ─── Project Cards Grid ────────────────────────────────────────────── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    /* ─── Project Card ──────────────────────────────────────────────────── */
+    .project-card {
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.055);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.095);
+      padding: 28px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease, border-color 0.28s ease, background 0.28s ease;
+      box-shadow:
+        0 4px 24px rgba(0,0,0,0.3),
+        0 1px 0 rgba(255,255,255,0.08) inset,
+        0 -1px 0 rgba(0,0,0,0.2) inset;
+    }
+
+    /* Staggered load animation */
+    .project-card:nth-child(1) { animation: fadeUp 0.55s ease 0.25s both; }
+    .project-card:nth-child(2) { animation: fadeUp 0.55s ease 0.32s both; }
+    .project-card:nth-child(3) { animation: fadeUp 0.55s ease 0.39s both; }
+    .project-card:nth-child(4) { animation: fadeUp 0.55s ease 0.46s both; }
+    .project-card:nth-child(5) { animation: fadeUp 0.55s ease 0.53s both; }
+
+    /* Aurora glow accent (top edge) */
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139,92,246,0.5), rgba(0,212,170,0.4), transparent);
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+
+    /* Noise texture */
+    .project-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 160px 160px;
+      opacity: 0.018;
+      pointer-events: none;
+    }
+
+    .project-card:hover {
+      transform: translateY(-6px);
+      background: rgba(255, 255, 255, 0.082);
+      border-color: rgba(255, 255, 255, 0.16);
+      box-shadow:
+        0 20px 56px rgba(0,0,0,0.45),
+        0 0 40px rgba(139,92,246,0.12),
+        0 1px 0 rgba(255,255,255,0.12) inset;
+    }
+
+    .project-card:hover::before { opacity: 1; }
+
+    /* ─── Card Header ───────────────────────────────────────────────────── */
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-lang-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .card-lang-icon.node  { background: rgba(104,160,99,0.2);  border: 1px solid rgba(104,160,99,0.3); }
+    .card-lang-icon.react { background: rgba(97,218,251,0.18); border: 1px solid rgba(97,218,251,0.28); }
+    .card-lang-icon.python{ background: rgba(53,108,160,0.2);  border: 1px solid rgba(53,108,160,0.3); }
+    .card-lang-icon.go    { background: rgba(0,172,214,0.18);  border: 1px solid rgba(0,172,214,0.28); }
+    .card-lang-icon.ts    { background: rgba(49,120,198,0.2);  border: 1px solid rgba(49,120,198,0.3); }
+
+    .card-menu-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: rgba(226,223,240,0.4);
+      transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .card-menu-btn:hover {
+      background: rgba(255,255,255,0.07);
+      color: rgba(226,223,240,0.8);
+    }
+
+    .card-menu-btn svg { width: 14px; height: 14px; }
+
+    /* ─── Card Body ─────────────────────────────────────────────────────── */
+    .card-body { position: relative; z-index: 1; }
+
+    .card-project-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #e2dff0;
+      letter-spacing: -0.01em;
+      margin-bottom: 5px;
+    }
+
+    .card-project-url {
+      font-size: 0.78rem;
+      color: rgba(0,212,170,0.75);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      width: fit-content;
+      transition: color 0.2s;
+    }
+
+    .card-project-url:hover { color: #00d4aa; }
+    .card-project-url svg { width: 10px; height: 10px; opacity: 0.7; }
+
+    /* ─── Status Badge ──────────────────────────────────────────────────── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 20px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: 0.02em;
+      margin-top: 14px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Running */
+    .status-badge.running {
+      background: rgba(0,212,170,0.13);
+      border: 1px solid rgba(0,212,170,0.3);
+      color: #00d4aa;
+    }
+    .status-badge.running .status-dot {
+      background: #00d4aa;
+      box-shadow: 0 0 0 0 rgba(0,212,170,0.7);
+      animation: pulseGreen 2s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0%   { box-shadow: 0 0 0 0 rgba(0,212,170,0.8); }
+      70%  { box-shadow: 0 0 0 6px rgba(0,212,170,0); }
+      100% { box-shadow: 0 0 0 0 rgba(0,212,170,0); }
+    }
+
+    /* Building */
+    .status-badge.building {
+      background: rgba(245,158,11,0.13);
+      border: 1px solid rgba(245,158,11,0.3);
+      color: #fbbf24;
+    }
+    .status-badge.building .status-dot {
+      background: #fbbf24;
+      box-shadow: 0 0 0 0 rgba(245,158,11,0.7);
+      animation: pulseOrange 1.4s infinite;
+    }
+
+    @keyframes pulseOrange {
+      0%   { box-shadow: 0 0 0 0 rgba(245,158,11,0.9); }
+      70%  { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+      100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+    }
+
+    /* Failed */
+    .status-badge.failed {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.28);
+      color: #f87171;
+    }
+    .status-badge.failed .status-dot {
+      background: #ef4444;
+      box-shadow: 0 0 0 0 rgba(239,68,68,0.7);
+      animation: pulseRed 2.5s infinite;
+    }
+
+    @keyframes pulseRed {
+      0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.8); }
+      70%  { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+      100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+    }
+
+    /* ─── Build Progress (Building card) ───────────────────────────────── */
+    .build-progress-wrap {
+      margin-top: 16px;
+    }
+
+    .build-progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .build-progress-label {
+      font-size: 0.75rem;
+      color: rgba(226,223,240,0.45);
+    }
+
+    .build-progress-pct {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #fbbf24;
+    }
+
+    .build-progress-track {
+      height: 4px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .build-progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #f59e0b, #fbbf24 60%, #fde68a);
+      width: 62%;
+      position: relative;
+      animation: progressPulse 2s ease-in-out infinite;
+    }
+
+    .build-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 30px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5));
+      animation: shimmer 1.8s ease-in-out infinite;
+    }
+
+    @keyframes progressPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    @keyframes shimmer {
+      0%   { transform: translateX(-60px); opacity: 0; }
+      50%  { opacity: 1; }
+      100% { transform: translateX(10px); opacity: 0; }
+    }
+
+    /* ─── Card Footer ───────────────────────────────────────────────────── */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: rgba(226,223,240,0.4);
+    }
+
+    .card-meta-row svg { width: 11px; height: 11px; opacity: 0.7; }
+
+    .card-branch-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(139,92,246,0.12);
+      border: 1px solid rgba(139,92,246,0.2);
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: rgba(196,181,253,0.8);
+    }
+
+    .card-branch-badge svg { width: 9px; height: 9px; }
+
+    .card-open-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: rgba(226,223,240,0.45);
+      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .card-open-btn:hover {
+      background: rgba(139,92,246,0.18);
+      border-color: rgba(139,92,246,0.35);
+      color: #c4b5fd;
+      transform: scale(1.08);
+    }
+
+    .card-open-btn svg { width: 14px; height: 14px; }
+
+    /* ─── Empty slot (5 cards → last slot takes full width if odd) ─────── */
+    /* 5 cards in 3-col grid: row 1 = 3 cards, row 2 = 2 cards */
+    /* We want row 2 to be centered — add a spacer ghost */
+
+    /* ─── Section Divider ───────────────────────────────────────────────── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 52px 0 32px;
+      animation: fadeUp 0.55s ease 0.6s both;
+    }
+
+    .section-divider-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(226,223,240,0.3);
+      white-space: nowrap;
+    }
+
+    .section-divider-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(139,92,246,0.3), transparent);
+    }
+
+    /* ─── Quick Access Row ──────────────────────────────────────────────── */
+    .quick-access {
+      display: flex;
+      gap: 16px;
+      animation: fadeUp 0.55s ease 0.65s both;
+    }
+
+    .quick-card {
+      flex: 1;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(16px);
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: background 0.25s, border-color 0.25s, transform 0.22s;
+    }
+
+    .quick-card:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-3px);
+    }
+
+    .quick-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .quick-icon.purple { background: rgba(139,92,246,0.18); border: 1px solid rgba(139,92,246,0.28); }
+    .quick-icon.teal   { background: rgba(0,212,170,0.14);  border: 1px solid rgba(0,212,170,0.25); }
+    .quick-icon.pink   { background: rgba(255,107,157,0.14); border: 1px solid rgba(255,107,157,0.25); }
+
+    .quick-icon svg { width: 20px; height: 20px; }
+
+    .quick-info { flex: 1; }
+
+    .quick-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e2dff0;
+      margin-bottom: 3px;
+    }
+
+    .quick-desc {
+      font-size: 0.78rem;
+      color: rgba(226,223,240,0.4);
+      line-height: 1.4;
+    }
+
+    .quick-arrow {
+      color: rgba(226,223,240,0.25);
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .quick-card:hover .quick-arrow {
+      color: rgba(226,223,240,0.7);
+      transform: translateX(3px);
+    }
+
+    .quick-arrow svg { width: 16px; height: 16px; }
+
+    /* ─── Floating glow orbs (decorative) ──────────────────────────────── */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-orb-1 {
+      width: 500px;
+      height: 500px;
+      top: -120px;
+      left: -100px;
+      background: rgba(139,92,246,0.18);
+      animation: orbFloat1 14s ease-in-out infinite alternate;
+    }
+
+    .glow-orb-2 {
+      width: 400px;
+      height: 400px;
+      top: 100px;
+      right: -80px;
+      background: rgba(0,212,170,0.14);
+      animation: orbFloat2 18s ease-in-out infinite alternate;
+    }
+
+    .glow-orb-3 {
+      width: 350px;
+      height: 350px;
+      bottom: 0;
+      left: 40%;
+      background: rgba(255,107,157,0.1);
+      animation: orbFloat3 16s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbFloat1 {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(60px, 80px) scale(1.15); }
+    }
+    @keyframes orbFloat2 {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(-50px, 60px) scale(0.9); }
+    }
+    @keyframes orbFloat3 {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(40px, -60px) scale(1.1); }
+    }
+
+    /* ─── Scrollbar ─────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+    ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.35); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.55); }
+  </style>
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="aurora-bg"></div>
+  <div class="noise-overlay"></div>
+
+  <!-- Floating glow orbs -->
+  <div class="glow-orb glow-orb-1"></div>
+  <div class="glow-orb glow-orb-2"></div>
+  <div class="glow-orb glow-orb-3"></div>
+
+  <div class="shell">
+
+    <!-- ── Navigation Bar ──────────────────────────────────────────────── -->
+    <nav class="navbar">
+      <a href="#" class="navbar-logo">
+        <div class="navbar-logo-icon">
+          <!-- Cloud / lightning bolt icon -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="white" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <span class="navbar-logo-text">KumbulaCloud</span>
+      </a>
+
+      <div class="navbar-links">
+        <a href="#" class="nav-link active">Projects</a>
+        <a href="#" class="nav-link">Deployments</a>
+        <a href="#" class="nav-link">Analytics</a>
+        <a href="#" class="nav-link">Team</a>
+      </div>
+
+      <div class="navbar-actions">
+        <!-- Search -->
+        <button class="btn-nav-icon" title="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+        <!-- Notifications -->
+        <button class="btn-nav-icon" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <!-- Avatar -->
+        <div class="navbar-avatar" title="Account">GM</div>
+      </div>
+    </nav>
+
+    <!-- ── Main Content ─────────────────────────────────────────────────── -->
+    <main class="main">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-title-group">
+          <span class="page-eyebrow">Workspace · grant-team</span>
+          <h1 class="page-title">Your Projects</h1>
+          <p class="page-subtitle">5 projects · Last activity 2 minutes ago</p>
+        </div>
+        <a href="#" class="btn-new-project">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>New Project</span>
+        </a>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-chip">
+          <div class="stat-dot green"></div>
+          <span class="stat-label">Running</span>
+          <span class="stat-val">3</span>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-dot orange"></div>
+          <span class="stat-label">Building</span>
+          <span class="stat-val">1</span>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-dot red"></div>
+          <span class="stat-label">Failed</span>
+          <span class="stat-val">1</span>
+        </div>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="projects-grid">
+
+        <!-- ── Card 1: payment-api (running) ──────────────────────────── -->
+        <div class="project-card">
+          <div class="card-header">
+            <div class="card-lang-icon node" title="Node.js">🟢</div>
+            <button class="card-menu-btn" title="Options">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+              </svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="card-project-name">payment-api</div>
+            <a href="#" class="card-project-url">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              payment-api.kumbula.app
+            </a>
+            <div class="status-badge running">
+              <div class="status-dot"></div>
+              Running
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Deployed 2m ago
+              </div>
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                </svg>
+                Node.js 20 · Express
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="card-branch-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>
+                </svg>
+                main
+              </div>
+              <button class="card-open-btn" title="Open project">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Card 2: storefront (running) ────────────────────────────── -->
+        <div class="project-card">
+          <div class="card-header">
+            <div class="card-lang-icon react" title="React">⚛️</div>
+            <button class="card-menu-btn" title="Options">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+              </svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="card-project-name">storefront</div>
+            <a href="#" class="card-project-url">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              storefront.kumbula.app
+            </a>
+            <div class="status-badge running">
+              <div class="status-dot"></div>
+              Running
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Deployed 47m ago
+              </div>
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                </svg>
+                Next.js 14 · React
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="card-branch-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>
+                </svg>
+                main
+              </div>
+              <button class="card-open-btn" title="Open project">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Card 3: auth-service (building) ─────────────────────────── -->
+        <div class="project-card">
+          <div class="card-header">
+            <div class="card-lang-icon go" title="Go">🐹</div>
+            <button class="card-menu-btn" title="Options">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+              </svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="card-project-name">auth-service</div>
+            <a href="#" class="card-project-url">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              auth.kumbula.app
+            </a>
+            <div class="status-badge building">
+              <div class="status-dot"></div>
+              Building
+            </div>
+
+            <!-- Build progress bar -->
+            <div class="build-progress-wrap">
+              <div class="build-progress-header">
+                <span class="build-progress-label">Installing dependencies…</span>
+                <span class="build-progress-pct">62%</span>
+              </div>
+              <div class="build-progress-track">
+                <div class="build-progress-fill"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Started 1m ago
+              </div>
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                </svg>
+                Go 1.22 · Fiber
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="card-branch-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>
+                </svg>
+                feat/oauth
+              </div>
+              <button class="card-open-btn" title="Open project">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Card 4: analytics-worker (running) ──────────────────────── -->
+        <div class="project-card">
+          <div class="card-header">
+            <div class="card-lang-icon python" title="Python">🐍</div>
+            <button class="card-menu-btn" title="Options">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+              </svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="card-project-name">analytics-worker</div>
+            <a href="#" class="card-project-url">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              analytics.kumbula.app
+            </a>
+            <div class="status-badge running">
+              <div class="status-dot"></div>
+              Running
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Deployed 3h ago
+              </div>
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                </svg>
+                Python 3.12 · FastAPI
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="card-branch-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>
+                </svg>
+                main
+              </div>
+              <button class="card-open-btn" title="Open project">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Card 5: docs-site (failed) ─────────────────────────────── -->
+        <div class="project-card">
+          <div class="card-header">
+            <div class="card-lang-icon ts" title="TypeScript">🔷</div>
+            <button class="card-menu-btn" title="Options">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+              </svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="card-project-name">docs-site</div>
+            <a href="#" class="card-project-url">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              docs.kumbula.app
+            </a>
+            <div class="status-badge failed">
+              <div class="status-dot"></div>
+              Failed
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Failed 15m ago
+              </div>
+              <div class="card-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                </svg>
+                TypeScript · Astro
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="card-branch-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>
+                </svg>
+                fix/nav-links
+              </div>
+              <button class="card-open-btn" title="Open project">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /projects-grid -->
+
+      <!-- Section Divider -->
+      <div class="section-divider">
+        <span class="section-divider-label">Quick Access</span>
+        <div class="section-divider-line"></div>
+      </div>
+
+      <!-- Quick Access Row -->
+      <div class="quick-access">
+
+        <div class="quick-card">
+          <div class="quick-icon purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+              <path d="M17.5 14.5v7M14 18h7"/>
+            </svg>
+          </div>
+          <div class="quick-info">
+            <div class="quick-title">Environment Variables</div>
+            <div class="quick-desc">Manage secrets and config across all projects</div>
+          </div>
+          <div class="quick-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="quick-card">
+          <div class="quick-icon teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="quick-info">
+            <div class="quick-title">Build Logs</div>
+            <div class="quick-desc">Live streaming logs for all active deployments</div>
+          </div>
+          <div class="quick-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="quick-card">
+          <div class="quick-icon pink">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ff6b9d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/>
+            </svg>
+          </div>
+          <div class="quick-info">
+            <div class="quick-title">Team Settings</div>
+            <div class="quick-desc">Manage members, roles, and access permissions</div>
+          </div>
+          <div class="quick-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+      </div><!-- /quick-access -->
+
+    </main>
+  </div><!-- /shell -->
+
+</body>
+</html>

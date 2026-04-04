@@ -1,0 +1,1466 @@
+<!-- Concept 5: Component Arrangement — Wizard Setup Flow -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KumbulaCloud — Project Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base:        #0a0a0f;
+      --bg-surface:     #111118;
+      --bg-elevated:    #16161f;
+      --bg-input:       #0d0d14;
+      --gold:           #d4a853;
+      --gold-light:     #e8c070;
+      --gold-dim:       #9a7332;
+      --gold-glow:      rgba(212, 168, 83, 0.12);
+      --gold-glow-md:   rgba(212, 168, 83, 0.22);
+      --text-primary:   #f5f0e8;
+      --text-secondary: #a09880;
+      --text-muted:     #5a5448;
+      --border-subtle:  rgba(212, 168, 83, 0.12);
+      --border-mid:     rgba(212, 168, 83, 0.25);
+      --border-active:  rgba(212, 168, 83, 0.55);
+      --success:        #4caf82;
+      --success-dim:    rgba(76, 175, 130, 0.15);
+      --error:          #cf6679;
+      --rail-width:     260px;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 55% 42%, rgba(212,168,83,0.045) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 20% 80%, rgba(212,168,83,0.025) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(212,168,83,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212,168,83,0.02) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+    }
+
+    /* ─── Top Bar ─── */
+    .topbar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .topbar-logo { display: flex; align-items: center; gap: 10px; }
+
+    .logo-mark {
+      width: 28px; height: 28px;
+      border: 1.5px solid var(--gold);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--gold-glow);
+    }
+
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px; font-weight: 600;
+      color: var(--text-primary); letter-spacing: 0.02em;
+    }
+    .logo-text span { color: var(--gold); }
+
+    .topbar-meta { display: flex; align-items: center; gap: 24px; }
+
+    .topbar-context { font-size: 13px; color: var(--text-muted); letter-spacing: 0.04em; }
+    .topbar-context strong { color: var(--text-secondary); font-weight: 500; }
+
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--bg-base); letter-spacing: 0.03em;
+    }
+
+    /* ─── Main ─── */
+    .main {
+      position: absolute;
+      top: 56px; left: 0; right: 0; bottom: 0;
+      display: flex;
+    }
+
+    /* ─── Rail ─── */
+    .rail {
+      width: var(--rail-width);
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      display: flex; flex-direction: column;
+      padding: 52px 0 40px;
+      position: relative; flex-shrink: 0;
+    }
+
+    .rail::after {
+      content: '';
+      position: absolute; right: 0; top: 0; bottom: 0; width: 1px;
+      background: linear-gradient(to bottom, transparent 0%, var(--border-subtle) 15%, var(--border-mid) 50%, var(--border-subtle) 85%, transparent 100%);
+    }
+
+    .rail-header {
+      padding: 0 32px 36px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 36px;
+    }
+
+    .rail-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;
+    }
+
+    .rail-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px; font-weight: 500; color: var(--text-primary); line-height: 1.3;
+    }
+
+    .steps-list {
+      padding: 0 24px;
+      position: relative; flex: 1;
+    }
+
+    .steps-list::before {
+      content: '';
+      position: absolute;
+      left: 43px; top: 18px; bottom: 18px; width: 1px;
+      background: linear-gradient(to bottom, var(--border-mid), var(--border-subtle) 90%, transparent);
+    }
+
+    .step-item {
+      display: flex; align-items: flex-start; gap: 16px;
+      margin-bottom: 8px; padding: 12px 14px;
+      border-radius: 10px; cursor: pointer;
+      transition: background 0.25s ease;
+      position: relative;
+    }
+    .step-item:hover { background: rgba(212, 168, 83, 0.04); }
+    .step-item.active { background: rgba(212, 168, 83, 0.07); }
+
+    .step-node {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1.5px solid var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--text-muted);
+      flex-shrink: 0; background: var(--bg-surface);
+      position: relative; z-index: 1;
+      transition: border-color 0.3s, background 0.3s, color 0.3s, box-shadow 0.3s;
+    }
+
+    .step-item.active .step-node {
+      border-color: var(--gold); color: var(--gold);
+      background: var(--gold-glow); box-shadow: 0 0 14px rgba(212, 168, 83, 0.2);
+    }
+
+    .step-item.completed .step-node {
+      border-color: var(--success); background: var(--success-dim); color: var(--success);
+    }
+
+    .check-icon { display: none; }
+    .step-item.completed .step-number { display: none; }
+    .step-item.completed .check-icon { display: block; }
+
+    .step-meta { flex: 1; padding-top: 4px; }
+
+    .step-name {
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      transition: color 0.25s; line-height: 1.2;
+    }
+    .step-item.active .step-name { color: var(--text-primary); }
+    .step-item.completed .step-name { color: var(--text-secondary); }
+
+    .step-desc {
+      font-size: 11.5px; color: var(--text-muted);
+      margin-top: 2px; opacity: 0; transition: opacity 0.25s;
+    }
+    .step-item.active .step-desc { opacity: 1; color: var(--gold-dim); }
+
+    .rail-footer {
+      padding: 0 32px; border-top: 1px solid var(--border-subtle);
+      padding-top: 24px; margin-top: auto;
+    }
+
+    .rail-progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--text-muted); margin-bottom: 8px;
+    }
+
+    .rail-progress-track {
+      height: 2px; background: var(--border-subtle); border-radius: 2px; overflow: hidden;
+    }
+
+    .rail-progress-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ─── Content ─── */
+    .content {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px; position: relative; overflow: hidden;
+    }
+
+    .content::before {
+      content: '';
+      position: absolute; top: 50%; right: 80px; transform: translateY(-50%);
+      width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,83,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .content-corner {
+      position: absolute; bottom: 40px; right: 48px;
+      font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; opacity: 0.5;
+    }
+
+    /* ─── Step Panels ─── */
+    .step-panel {
+      display: none; width: 100%; max-width: 600px;
+      animation: panelEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .step-panel.active { display: block; }
+
+    @keyframes panelEnter {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+
+    .panel-step-badge {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold-dim); background: var(--gold-glow); border: 1px solid var(--border-subtle);
+      padding: 3px 10px; border-radius: 20px;
+    }
+
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 34px; font-weight: 600; color: var(--text-primary);
+      line-height: 1.2; letter-spacing: -0.01em; margin-bottom: 12px;
+    }
+    .panel-title em { font-style: italic; color: var(--gold); }
+
+    .panel-subtitle {
+      font-size: 15px; color: var(--text-secondary);
+      margin-bottom: 40px; line-height: 1.65; font-weight: 300;
+    }
+
+    /* ─── Form ─── */
+    .field-group { margin-bottom: 28px; }
+
+    .field-label {
+      display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px;
+    }
+
+    .field-input {
+      width: 100%; background: var(--bg-input);
+      border: 1px solid var(--border-subtle); border-radius: 10px;
+      padding: 14px 18px; font-family: 'Source Sans 3', sans-serif;
+      font-size: 15px; color: var(--text-primary); outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s; caret-color: var(--gold);
+    }
+    .field-input::placeholder { color: var(--text-muted); }
+    .field-input:focus {
+      border-color: var(--border-active);
+      box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.08), 0 0 20px rgba(212, 168, 83, 0.05);
+    }
+    .field-input.has-value { border-color: var(--border-mid); }
+
+    .field-hint {
+      margin-top: 8px; font-size: 12.5px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .field-hint.valid { color: var(--success); }
+    .field-hint.error { color: var(--error); }
+    .hint-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+    /* ─── Option cards ─── */
+    .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+
+    .option-card {
+      background: var(--bg-input); border: 1px solid var(--border-subtle);
+      border-radius: 10px; padding: 16px 18px; cursor: pointer;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    }
+    .option-card:hover { border-color: var(--border-mid); background: var(--bg-elevated); }
+    .option-card.selected {
+      border-color: var(--border-active); background: var(--gold-glow);
+      box-shadow: 0 0 0 1px rgba(212,168,83,0.1) inset;
+    }
+
+    .option-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+
+    .option-icon {
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center; color: var(--gold-dim);
+    }
+    .option-card.selected .option-icon { color: var(--gold); }
+
+    .option-card-name { font-size: 13.5px; font-weight: 600; color: var(--text-secondary); transition: color 0.2s; }
+    .option-card.selected .option-card-name { color: var(--text-primary); }
+    .option-card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.45; }
+
+    /* ─── Env table ─── */
+    .env-table {
+      background: var(--bg-input); border: 1px solid var(--border-subtle);
+      border-radius: 10px; overflow: hidden; margin-bottom: 16px;
+    }
+
+    .env-row {
+      display: grid; grid-template-columns: 1fr 1fr 36px;
+      border-bottom: 1px solid var(--border-subtle); transition: background 0.2s;
+    }
+    .env-row:last-child { border-bottom: none; }
+    .env-row:hover { background: rgba(212, 168, 83, 0.03); }
+
+    .env-cell {
+      padding: 10px 14px; font-size: 13px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      color: var(--text-secondary); border-right: 1px solid var(--border-subtle);
+      display: flex; align-items: center;
+    }
+    .env-cell:last-child { border-right: none; justify-content: center; padding: 10px 8px; }
+    .env-cell.key { color: var(--gold-dim); }
+    .env-cell.value { color: var(--text-muted); font-size: 12.5px; }
+
+    .env-remove {
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; padding: 4px; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.2s, background 0.2s; font-size: 14px;
+    }
+    .env-remove:hover { color: var(--error); background: rgba(207, 102, 121, 0.08); }
+
+    .add-env-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 13px; color: var(--gold-dim); background: none;
+      border: 1px dashed var(--border-mid); border-radius: 8px;
+      padding: 8px 16px; cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      font-family: 'Source Sans 3', sans-serif;
+    }
+    .add-env-btn:hover { color: var(--gold); border-color: var(--border-active); background: var(--gold-glow); }
+
+    /* ─── Code block ─── */
+    .code-block-wrapper {
+      background: #08080d; border: 1px solid var(--border-mid);
+      border-radius: 12px; overflow: hidden; margin-bottom: 28px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .code-block-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; background: rgba(212, 168, 83, 0.04);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .code-block-title {
+      font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-muted);
+    }
+
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--gold-dim); background: var(--gold-glow);
+      border: 1px solid var(--border-subtle); border-radius: 6px;
+      padding: 4px 12px; cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .copy-btn:hover { color: var(--gold); border-color: var(--border-active); background: var(--gold-glow-md); }
+    .copy-btn.copied { color: var(--success); border-color: rgba(76, 175, 130, 0.3); background: var(--success-dim); }
+
+    .code-block-body { padding: 20px 22px; }
+
+    .code-line {
+      display: flex; align-items: flex-start; gap: 14px;
+      margin-bottom: 10px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 13px; line-height: 1.7;
+    }
+    .code-line:last-child { margin-bottom: 0; }
+
+    .code-prompt { color: var(--gold-dim); user-select: none; flex-shrink: 0; margin-top: 1px; }
+    .code-text { color: var(--text-secondary); }
+    .code-text .cmd  { color: #6eb3e8; }
+    .code-text .arg  { color: #9ecf85; }
+    .code-text .url  { color: var(--gold-light); }
+    .code-text .cmt  { color: var(--text-muted); font-style: italic; }
+
+    /* ─── Deploy status card ─── */
+    .deploy-status-card {
+      background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+      border-radius: 14px; padding: 28px 28px 24px; margin-bottom: 28px;
+      position: relative; overflow: hidden;
+    }
+    .deploy-status-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .deploy-status-row {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+    }
+
+    .deploy-status-info { display: flex; flex-direction: column; gap: 3px; }
+    .deploy-status-name {
+      font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; color: var(--text-primary);
+    }
+    .deploy-status-url { font-size: 13px; color: var(--gold-dim); font-family: 'SF Mono', 'Fira Code', monospace; }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 14px; border-radius: 20px; font-size: 12px;
+      font-weight: 600; letter-spacing: 0.06em;
+    }
+    .status-badge.building { background: rgba(212, 168, 83, 0.12); color: var(--gold); border: 1px solid rgba(212, 168, 83, 0.25); }
+    .status-badge.running  { background: var(--success-dim); color: var(--success); border: 1px solid rgba(76, 175, 130, 0.25); }
+    .status-badge.failed   { background: rgba(207, 102, 121, 0.12); color: var(--error); border: 1px solid rgba(207, 102, 121, 0.25); }
+
+    .pulse-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: currentColor;
+      animation: pulseDot 1.8s ease-in-out infinite;
+    }
+    @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.75); } }
+
+    .build-log {
+      background: #060609; border: 1px solid var(--border-subtle);
+      border-radius: 10px; padding: 14px 16px; max-height: 160px;
+      overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border-mid) transparent;
+    }
+    .build-log::-webkit-scrollbar { width: 4px; }
+    .build-log::-webkit-scrollbar-track { background: transparent; }
+    .build-log::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 4px; }
+
+    .log-line {
+      display: flex; gap: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11.5px; line-height: 1.65; color: var(--text-muted); margin-bottom: 2px;
+    }
+    .log-ts  { color: #3a3530; flex-shrink: 0; }
+    .log-line.log-ok   .log-msg { color: var(--success); }
+    .log-line.log-info .log-msg { color: var(--text-secondary); }
+    .log-line.log-warn .log-msg { color: #d4a44a; }
+    .log-line.log-run  .log-msg { color: var(--gold-dim); }
+
+    /* ─── Overview ─── */
+    .overview-panel {
+      display: none; width: 100%; max-width: 660px;
+      animation: panelEnter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .overview-panel.active { display: block; }
+
+    .success-header { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; }
+
+    .success-icon-wrap {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--success-dim); border: 1.5px solid rgba(76, 175, 130, 0.35);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    .check-path {
+      stroke-dasharray: 32; stroke-dashoffset: 32;
+      animation: drawCheck 0.6s ease forwards;
+    }
+    @keyframes drawCheck { from { stroke-dashoffset: 32; opacity: 0; } to { stroke-dashoffset: 0; opacity: 1; } }
+
+    .success-title {
+      font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 600;
+      color: var(--text-primary); line-height: 1.2;
+    }
+    .success-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 4px; font-weight: 300; }
+
+    .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+
+    .overview-tile {
+      background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 20px 22px; transition: border-color 0.25s;
+    }
+    .overview-tile:hover { border-color: var(--border-mid); }
+
+    .overview-tile-label {
+      font-size: 10.5px; font-weight: 600; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;
+    }
+
+    .overview-tile-value { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--text-primary); }
+    .overview-tile-value.mono {
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: var(--gold-dim);
+    }
+    .overview-tile-sub { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+
+    .overview-actions { display: flex; align-items: center; gap: 12px; }
+
+    /* ─── Buttons ─── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 28px; border-radius: 10px;
+      font-family: 'Source Sans 3', sans-serif; font-size: 14px; font-weight: 600;
+      letter-spacing: 0.04em; cursor: pointer; border: none; outline: none;
+      transition: all 0.25s ease; user-select: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #c9992e 0%, var(--gold) 50%, var(--gold-light) 100%);
+      color: #0a0807;
+      box-shadow: 0 2px 18px rgba(212, 168, 83, 0.22), 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #d4a236 0%, var(--gold-light) 50%, #f0d090 100%);
+      box-shadow: 0 4px 26px rgba(212, 168, 83, 0.35), 0 1px 6px rgba(0,0,0,0.3);
+      transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0); box-shadow: 0 1px 10px rgba(212, 168, 83, 0.2); }
+
+    .btn-secondary {
+      background: transparent; color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+    .btn-secondary:hover { color: var(--text-primary); border-color: var(--border-mid); background: rgba(255,255,255,0.03); }
+
+    .btn-ghost {
+      background: transparent; color: var(--gold-dim);
+      border: 1px solid transparent; padding: 13px 18px;
+    }
+    .btn-ghost:hover { color: var(--gold); border-color: var(--border-subtle); }
+
+    .btn-deploy {
+      background: linear-gradient(135deg, #c9992e, var(--gold));
+      color: #0a0807; padding: 15px 36px; font-size: 15px;
+      box-shadow: 0 4px 24px rgba(212, 168, 83, 0.28); border-radius: 12px;
+    }
+    .btn-deploy:hover { transform: translateY(-2px); box-shadow: 0 6px 32px rgba(212, 168, 83, 0.42); }
+    .btn-deploy:active { transform: translateY(0); }
+
+    .panel-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--border-subtle);
+    }
+    .panel-nav-right { display: flex; align-items: center; gap: 10px; }
+
+    /* ─── Info banner ─── */
+    .info-banner {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: var(--gold-glow); border: 1px solid var(--border-subtle);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 28px;
+    }
+    .info-banner-icon { color: var(--gold-dim); flex-shrink: 0; margin-top: 1px; }
+    .info-banner-text { font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
+    .info-banner-text strong { color: var(--text-primary); font-weight: 600; }
+
+    .divider { height: 1px; background: var(--border-subtle); margin: 24px 0; }
+
+    /* ─── Transition overlay ─── */
+    .transition-overlay {
+      position: fixed; inset: 0;
+      background: rgba(10,10,15,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 999; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .transition-overlay.flash { opacity: 1; }
+  </style>
+</head>
+<body>
+<div class="transition-overlay" id="transOverlay"></div>
+
+<div class="shell">
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-mark">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M7 1L12.196 4V10L7 13L1.804 10V4L7 1Z" stroke="#d4a853" stroke-width="1.2" fill="none"/>
+          <circle cx="7" cy="7" r="1.8" fill="#d4a853" opacity="0.7"/>
+        </svg>
+      </div>
+      <span class="logo-text">Kumbula<span>Cloud</span></span>
+    </div>
+    <div class="topbar-meta">
+      <span class="topbar-context">New Project Setup &nbsp;—&nbsp; <strong>Step <span id="topbarStepNum">1</span> of 4</strong></span>
+      <div class="avatar">GM</div>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- Left Rail -->
+    <aside class="rail">
+      <div class="rail-header">
+        <div class="rail-label">Setup Wizard</div>
+        <div class="rail-title">New Deployment</div>
+      </div>
+
+      <nav class="steps-list">
+        <div class="step-item active" id="rail-step-1" onclick="goToStep(1)">
+          <div class="step-node">
+            <span class="step-number">1</span>
+            <svg class="check-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2 6.5L5 9.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="step-meta">
+            <div class="step-name">Name Your Project</div>
+            <div class="step-desc">Choose an identifier</div>
+          </div>
+        </div>
+
+        <div class="step-item" id="rail-step-2" onclick="goToStep(2)">
+          <div class="step-node">
+            <span class="step-number">2</span>
+            <svg class="check-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2 6.5L5 9.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="step-meta">
+            <div class="step-name">Configure Environment</div>
+            <div class="step-desc">Set variables &amp; runtime</div>
+          </div>
+        </div>
+
+        <div class="step-item" id="rail-step-3" onclick="goToStep(3)">
+          <div class="step-node">
+            <span class="step-number">3</span>
+            <svg class="check-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2 6.5L5 9.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="step-meta">
+            <div class="step-name">Connect Repository</div>
+            <div class="step-desc">Push via git remote</div>
+          </div>
+        </div>
+
+        <div class="step-item" id="rail-step-4" onclick="goToStep(4)">
+          <div class="step-node">
+            <span class="step-number">4</span>
+            <svg class="check-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2 6.5L5 9.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="step-meta">
+            <div class="step-name">Deploy</div>
+            <div class="step-desc">Launch your project</div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="rail-footer">
+        <div class="rail-progress-label">
+          <span>Progress</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="rail-progress-track">
+          <div class="rail-progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Content Area -->
+    <main class="content">
+
+      <!-- STEP 1 -->
+      <div class="step-panel active" id="panel-1">
+        <div class="panel-eyebrow"><span class="panel-step-badge">Step 01</span></div>
+        <h1 class="panel-title">Name Your <em>Project</em></h1>
+        <p class="panel-subtitle">
+          Give your project a unique identifier. This becomes your deployment subdomain
+          and is used across logs, webhooks, and environment isolation.
+        </p>
+
+        <div class="field-group">
+          <label class="field-label" for="projectName">Project Name</label>
+          <input
+            class="field-input"
+            id="projectName"
+            type="text"
+            placeholder="e.g. aurora-api"
+            autocomplete="off"
+            spellcheck="false"
+            oninput="validateProjectName(this)"
+          />
+          <div class="field-hint" id="nameHint">
+            <span class="hint-dot"></span>
+            <span id="nameHintText">Lowercase letters, numbers and hyphens only. 3–48 characters.</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Runtime</label>
+          <div class="option-grid">
+            <div class="option-card selected" onclick="selectRuntime(this)">
+              <div class="option-card-header">
+                <div class="option-icon">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <path d="M9 1.5L16 5.5V12.5L9 16.5L2 12.5V5.5L9 1.5Z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+                    <text x="9" y="11.5" text-anchor="middle" font-size="5.5" fill="currentColor" font-family="monospace">JS</text>
+                  </svg>
+                </div>
+                <span class="option-card-name">Node.js</span>
+              </div>
+              <div class="option-card-desc">Latest LTS · npm / yarn / pnpm</div>
+            </div>
+            <div class="option-card" onclick="selectRuntime(this)">
+              <div class="option-card-header">
+                <div class="option-icon">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <rect x="2" y="2" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.4"/>
+                    <text x="9" y="12" text-anchor="middle" font-size="6" fill="currentColor" font-family="monospace">Py</text>
+                  </svg>
+                </div>
+                <span class="option-card-name">Python</span>
+              </div>
+              <div class="option-card-desc">3.12 · pip / poetry / uv</div>
+            </div>
+            <div class="option-card" onclick="selectRuntime(this)">
+              <div class="option-card-header">
+                <div class="option-icon">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/>
+                    <text x="9" y="12" text-anchor="middle" font-size="6.5" fill="currentColor" font-family="monospace">Go</text>
+                  </svg>
+                </div>
+                <span class="option-card-name">Go</span>
+              </div>
+              <div class="option-card-desc">1.22 · modules native</div>
+            </div>
+            <div class="option-card" onclick="selectRuntime(this)">
+              <div class="option-card-header">
+                <div class="option-icon">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <path d="M3 9H15M9 3V15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                    <rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                  </svg>
+                </div>
+                <span class="option-card-name">Docker</span>
+              </div>
+              <div class="option-card-desc">Custom image · any stack</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-nav">
+          <span></span>
+          <div class="panel-nav-right">
+            <button class="btn btn-primary" onclick="goToStep(2)">
+              Continue
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-panel" id="panel-2">
+        <div class="panel-eyebrow"><span class="panel-step-badge">Step 02</span></div>
+        <h1 class="panel-title">Configure <em>Environment</em></h1>
+        <p class="panel-subtitle">
+          Define environment variables for your project. These are encrypted at rest and
+          injected into your container at runtime. You can add more from the dashboard later.
+        </p>
+
+        <div class="env-table" id="envTable">
+          <div class="env-row">
+            <div class="env-cell key">NODE_ENV</div>
+            <div class="env-cell value">production</div>
+            <div class="env-cell"><button class="env-remove" onclick="removeEnvRow(this)" aria-label="Remove variable">✕</button></div>
+          </div>
+          <div class="env-row">
+            <div class="env-cell key">PORT</div>
+            <div class="env-cell value">3000</div>
+            <div class="env-cell"><button class="env-remove" onclick="removeEnvRow(this)" aria-label="Remove variable">✕</button></div>
+          </div>
+          <div class="env-row">
+            <div class="env-cell key">DATABASE_URL</div>
+            <div class="env-cell value">••••••••••••••••</div>
+            <div class="env-cell"><button class="env-remove" onclick="removeEnvRow(this)" aria-label="Remove variable">✕</button></div>
+          </div>
+        </div>
+
+        <button class="add-env-btn" onclick="addEnvRow()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Add Variable
+        </button>
+
+        <div class="divider"></div>
+
+        <div class="info-banner">
+          <div class="info-banner-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.5" stroke="#d4a853" stroke-width="1.3"/>
+              <path d="M8 7V11M8 5V5.5" stroke="#d4a853" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="info-banner-text">
+            <strong>Secrets are encrypted.</strong> Values marked with bullets are stored
+            using AES-256 encryption and never exposed in logs or build output.
+          </div>
+        </div>
+
+        <div class="panel-nav">
+          <button class="btn btn-ghost" onclick="goToStep(1)">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M11 7H3M3 7L6.5 3.5M3 7L6.5 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Back
+          </button>
+          <div class="panel-nav-right">
+            <button class="btn btn-secondary" onclick="goToStep(3)">Skip for now</button>
+            <button class="btn btn-primary" onclick="goToStep(3)">
+              Save &amp; Continue
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-panel" id="panel-3">
+        <div class="panel-eyebrow"><span class="panel-step-badge">Step 03</span></div>
+        <h1 class="panel-title">Connect <em>Repository</em></h1>
+        <p class="panel-subtitle">
+          KumbulaCloud uses a push-to-deploy model. Add the git remote below, then push
+          your branch. Every push to <code style="font-family:monospace;color:var(--gold-dim);font-size:14px;">main</code> triggers a new build automatically.
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-block-header">
+            <span class="code-block-title">Terminal — Git Setup</span>
+            <button class="copy-btn" id="copyBtn" onclick="copyGitCommand()">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <rect x="4.5" y="4.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M4.5 8.5H3A1.5 1.5 0 011.5 7V3A1.5 1.5 0 013 1.5H7A1.5 1.5 0 018.5 3V4.5" stroke="currentColor" stroke-width="1.3"/>
+              </svg>
+              <span id="copyBtnLabel">Copy</span>
+            </button>
+          </div>
+          <div class="code-block-body">
+            <div class="code-line">
+              <span class="code-prompt">$</span>
+              <span class="code-text">
+                <span class="cmd">git</span>
+                <span> remote add </span>
+                <span class="arg">kumbula</span>
+                <span> </span>
+                <span class="url">git@deploy.kumbula.cloud:<span id="gitProjectSlug">aurora-api</span>.git</span>
+              </span>
+            </div>
+            <div class="code-line">
+              <span class="code-prompt">$</span>
+              <span class="code-text">
+                <span class="cmd">git</span>
+                <span> push </span>
+                <span class="arg">kumbula</span>
+                <span> </span>
+                <span class="arg">main</span>
+              </span>
+            </div>
+            <div class="code-line">
+              <span class="code-prompt" style="opacity:0"> </span>
+              <span class="code-text">
+                <span class="cmt"># Alternatively: push any branch for a preview deployment</span>
+              </span>
+            </div>
+            <div class="code-line">
+              <span class="code-prompt">$</span>
+              <span class="code-text">
+                <span class="cmd">git</span>
+                <span> push </span>
+                <span class="arg">kumbula</span>
+                <span> </span>
+                <span class="arg">feature/my-branch</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-banner">
+          <div class="info-banner-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M2 4L8 1L14 4V12L8 15L2 12V4Z" stroke="#d4a853" stroke-width="1.3" fill="none"/>
+              <circle cx="8" cy="8" r="2" stroke="#d4a853" stroke-width="1.2"/>
+            </svg>
+          </div>
+          <div class="info-banner-text">
+            <strong>SSH key required.</strong> Make sure your public key is added under
+            <strong>Account &rarr; SSH Keys</strong> before your first push. Builds stream live once received.
+          </div>
+        </div>
+
+        <div class="panel-nav">
+          <button class="btn btn-ghost" onclick="goToStep(2)">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M11 7H3M3 7L6.5 3.5M3 7L6.5 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Back
+          </button>
+          <div class="panel-nav-right">
+            <button class="btn btn-primary" onclick="goToStep(4)">
+              I've pushed my code
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-panel" id="panel-4">
+        <div class="panel-eyebrow"><span class="panel-step-badge">Step 04</span></div>
+        <h1 class="panel-title">Deploy Your <em>Project</em></h1>
+        <p class="panel-subtitle">
+          Everything is ready. Trigger a deployment now, or push to your git remote at
+          any time. The platform will build, containerize, and route your project automatically.
+        </p>
+
+        <div class="deploy-status-card">
+          <div class="deploy-status-row">
+            <div class="deploy-status-info">
+              <div class="deploy-status-name" id="deployProjectName">aurora-api</div>
+              <div class="deploy-status-url" id="deployUrl">aurora-api.kumbula.cloud</div>
+            </div>
+            <div class="status-badge building" id="deployBadge">
+              <span class="pulse-dot"></span>
+              <span id="deployStatusText">Awaiting Push</span>
+            </div>
+          </div>
+          <div class="build-log" id="buildLog">
+            <div class="log-line log-info">
+              <span class="log-ts">12:04:02</span>
+              <span class="log-msg">Waiting for build trigger...</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
+          <button class="btn btn-deploy" id="deployBtn" onclick="triggerDeploy()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 2V10M8 2L5 5M8 2L11 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 13H13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            Deploy Now
+          </button>
+          <span style="font-size:12.5px;color:var(--text-muted);">or push to <code style="font-family:monospace;color:var(--gold-dim);">kumbula main</code></span>
+        </div>
+
+        <div class="panel-nav">
+          <button class="btn btn-ghost" onclick="goToStep(3)">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M11 7H3M3 7L6.5 3.5M3 7L6.5 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Back
+          </button>
+          <div class="panel-nav-right">
+            <button class="btn btn-secondary" id="viewDashBtn" onclick="showOverview()">View Dashboard</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECT OVERVIEW -->
+      <div class="overview-panel" id="overviewPanel">
+        <div class="success-header">
+          <div class="success-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path class="check-path" d="M5 13L9.5 17.5L19 7" stroke="#4caf82" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="success-title">Project Live</div>
+            <div class="success-subtitle">Your deployment is active and serving traffic.</div>
+          </div>
+        </div>
+
+        <div class="overview-grid">
+          <div class="overview-tile">
+            <div class="overview-tile-label">Project</div>
+            <div class="overview-tile-value" id="overviewName">aurora-api</div>
+            <div class="overview-tile-sub">Node.js · Production</div>
+          </div>
+          <div class="overview-tile">
+            <div class="overview-tile-label">Status</div>
+            <div style="margin-top:2px;">
+              <div class="status-badge running" style="display:inline-flex;">
+                <span class="pulse-dot"></span>
+                <span>Running</span>
+              </div>
+            </div>
+            <div class="overview-tile-sub">Uptime: 00:03:41</div>
+          </div>
+          <div class="overview-tile">
+            <div class="overview-tile-label">URL</div>
+            <div class="overview-tile-value mono" id="overviewUrl">aurora-api.kumbula.cloud</div>
+            <div class="overview-tile-sub">HTTPS · auto-cert</div>
+          </div>
+          <div class="overview-tile">
+            <div class="overview-tile-label">Last Deployed</div>
+            <div class="overview-tile-value">Just now</div>
+            <div class="overview-tile-sub">Build #1 · 58s</div>
+          </div>
+          <div class="overview-tile">
+            <div class="overview-tile-label">Git Remote</div>
+            <div class="overview-tile-value mono" style="font-size:11.5px;" id="overviewGitUrl">git@deploy.kumbula.cloud:aurora-api.git</div>
+            <div class="overview-tile-sub">Push to redeploy</div>
+          </div>
+          <div class="overview-tile">
+            <div class="overview-tile-label">Environment Vars</div>
+            <div class="overview-tile-value">3 variables</div>
+            <div class="overview-tile-sub">1 encrypted secret</div>
+          </div>
+        </div>
+
+        <div class="overview-actions">
+          <button class="btn btn-primary" onclick="redeployProject()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M11.5 7A4.5 4.5 0 112.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M2.5 4V7H5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Redeploy
+          </button>
+          <button class="btn btn-secondary" onclick="resetWizard()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2 7H12M2 4H9M2 10H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            New Project
+          </button>
+          <button class="btn btn-ghost">View Logs &rarr;</button>
+        </div>
+      </div>
+
+      <div class="content-corner">KumbulaCloud v0.8.1</div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ─── State ─── */
+  var currentStep = 1;
+  var maxReached  = 1;
+  var projectName = 'aurora-api';
+  var deployRunning = false;
+
+  var STEP_PROGRESS = { 1: 0, 2: 25, 3: 50, 4: 75 };
+
+  /* ─── Utility: safe text update ─── */
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  /* ─── Step navigation ─── */
+  function goToStep(n) {
+    if (n === currentStep) return;
+    if (n > maxReached + 1) return;
+
+    var overlay = document.getElementById('transOverlay');
+    overlay.classList.add('flash');
+    setTimeout(function () {
+      switchToStep(n);
+      overlay.classList.remove('flash');
+    }, 160);
+  }
+  window.goToStep = goToStep;
+
+  function switchToStep(n) {
+    document.querySelectorAll('.step-panel').forEach(function (p) { p.classList.remove('active'); });
+    document.getElementById('overviewPanel').classList.remove('active');
+
+    var panel = document.getElementById('panel-' + n);
+    if (panel) {
+      panel.classList.add('active');
+      panel.style.animation = 'none';
+      void panel.offsetHeight;
+      panel.style.animation = '';
+    }
+
+    for (var i = 1; i <= 4; i++) {
+      var item = document.getElementById('rail-step-' + i);
+      item.classList.remove('active', 'completed');
+      if (i < n) { item.classList.add('completed'); }
+      else if (i === n) { item.classList.add('active'); }
+    }
+
+    var pct = STEP_PROGRESS[n] || 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    setText('progressPct', pct + '%');
+    setText('topbarStepNum', String(n));
+
+    if (n > maxReached) maxReached = n;
+    currentStep = n;
+    syncProjectName();
+  }
+
+  function showOverview() {
+    var overlay = document.getElementById('transOverlay');
+    overlay.classList.add('flash');
+    setTimeout(function () {
+      document.querySelectorAll('.step-panel').forEach(function (p) { p.classList.remove('active'); });
+      for (var i = 1; i <= 4; i++) {
+        var item = document.getElementById('rail-step-' + i);
+        item.classList.remove('active');
+        item.classList.add('completed');
+      }
+      document.getElementById('progressFill').style.width = '100%';
+      setText('progressPct', '100%');
+      setText('topbarStepNum', '\u2713');
+
+      var op = document.getElementById('overviewPanel');
+      op.classList.add('active');
+      op.style.animation = 'none';
+      void op.offsetHeight;
+      op.style.animation = '';
+
+      syncProjectName();
+      overlay.classList.remove('flash');
+    }, 160);
+  }
+  window.showOverview = showOverview;
+
+  function resetWizard() {
+    currentStep = 1;
+    maxReached  = 1;
+    deployRunning = false;
+    projectName = 'aurora-api';
+
+    var nameInput = document.getElementById('projectName');
+    if (nameInput) nameInput.value = '';
+    var hint = document.getElementById('nameHint');
+    if (hint) hint.className = 'field-hint';
+    setText('nameHintText', 'Lowercase letters, numbers and hyphens only. 3\u201348 characters.');
+
+    resetBuildLog();
+
+    var overlay = document.getElementById('transOverlay');
+    overlay.classList.add('flash');
+    setTimeout(function () {
+      switchToStep(1);
+      overlay.classList.remove('flash');
+    }, 160);
+  }
+  window.resetWizard = resetWizard;
+
+  /* ─── Project name validation ─── */
+  function validateProjectName(input) {
+    var val = input.value.trim();
+    var hint = document.getElementById('nameHint');
+    var slug = val.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+|-+$/g, '');
+
+    if (val.length === 0) {
+      hint.className = 'field-hint';
+      setText('nameHintText', 'Lowercase letters, numbers and hyphens only. 3\u201348 characters.');
+      input.classList.remove('has-value');
+      projectName = 'aurora-api';
+    } else if (val.length < 3) {
+      hint.className = 'field-hint error';
+      setText('nameHintText', 'Name is too short \u2014 minimum 3 characters.');
+      input.classList.remove('has-value');
+    } else if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug)) {
+      hint.className = 'field-hint error';
+      setText('nameHintText', 'Must start and end with a letter or number.');
+      input.classList.remove('has-value');
+    } else {
+      hint.className = 'field-hint valid';
+      setText('nameHintText', 'Looks great \u2014 ' + slug + '.kumbula.cloud is available.');
+      input.classList.add('has-value');
+      projectName = slug;
+    }
+    syncProjectName();
+  }
+  window.validateProjectName = validateProjectName;
+
+  function syncProjectName() {
+    var name = projectName || 'aurora-api';
+    setText('gitProjectSlug', name);
+    setText('deployProjectName', name);
+    setText('deployUrl', name + '.kumbula.cloud');
+    setText('overviewName', name);
+    setText('overviewUrl', name + '.kumbula.cloud');
+    setText('overviewGitUrl', 'git@deploy.kumbula.cloud:' + name + '.git');
+  }
+
+  /* ─── Runtime selection ─── */
+  function selectRuntime(card) {
+    var grid = card.closest('.option-grid');
+    if (grid) {
+      grid.querySelectorAll('.option-card').forEach(function (c) { c.classList.remove('selected'); });
+    }
+    card.classList.add('selected');
+  }
+  window.selectRuntime = selectRuntime;
+
+  /* ─── Env rows ─── */
+  function removeEnvRow(btn) {
+    var row = btn.closest('.env-row');
+    if (row) row.remove();
+  }
+  window.removeEnvRow = removeEnvRow;
+
+  var envCount = 3;
+  function addEnvRow() {
+    envCount++;
+    var table = document.getElementById('envTable');
+    if (!table) return;
+
+    var row = document.createElement('div');
+    row.className = 'env-row';
+
+    var keyCell = document.createElement('div');
+    keyCell.className = 'env-cell key';
+    keyCell.setAttribute('contenteditable', 'true');
+    keyCell.style.outline = 'none';
+    keyCell.textContent = 'NEW_VAR_' + envCount;
+
+    var valCell = document.createElement('div');
+    valCell.className = 'env-cell value';
+    valCell.setAttribute('contenteditable', 'true');
+    valCell.style.outline = 'none';
+    valCell.textContent = 'your_value';
+
+    var actCell = document.createElement('div');
+    actCell.className = 'env-cell';
+
+    var removeBtn = document.createElement('button');
+    removeBtn.className = 'env-remove';
+    removeBtn.setAttribute('aria-label', 'Remove variable');
+    removeBtn.textContent = '\u2715';
+    removeBtn.addEventListener('click', function () { row.remove(); });
+
+    actCell.appendChild(removeBtn);
+    row.appendChild(keyCell);
+    row.appendChild(valCell);
+    row.appendChild(actCell);
+    table.appendChild(row);
+
+    setTimeout(function () {
+      keyCell.focus();
+      var range = document.createRange();
+      range.selectNodeContents(keyCell);
+      var sel = window.getSelection();
+      if (sel) { sel.removeAllRanges(); sel.addRange(range); }
+    }, 50);
+  }
+  window.addEnvRow = addEnvRow;
+
+  /* ─── Copy git command ─── */
+  function copyGitCommand() {
+    var name = projectName || 'aurora-api';
+    var text = 'git remote add kumbula git@deploy.kumbula.cloud:' + name + '.git\ngit push kumbula main';
+
+    var btn = document.getElementById('copyBtn');
+    var label = document.getElementById('copyBtnLabel');
+
+    navigator.clipboard.writeText(text).then(function () {
+      if (btn) btn.classList.add('copied');
+      if (label) label.textContent = 'Copied!';
+      setTimeout(function () {
+        if (btn) btn.classList.remove('copied');
+        if (label) label.textContent = 'Copy';
+      }, 2200);
+    }).catch(function () {
+      /* clipboard unavailable — silently ignore */
+    });
+  }
+  window.copyGitCommand = copyGitCommand;
+
+  /* ─── Build log ─── */
+  var LOG_LINES = [
+    { cls: 'log-run',  ts: '12:04:11', msg: 'Received push: refs/heads/main \u2192 a3f7c21' },
+    { cls: 'log-info', ts: '12:04:11', msg: 'Cloning repository...' },
+    { cls: 'log-info', ts: '12:04:13', msg: 'Detected runtime: Node.js 20.x (LTS)' },
+    { cls: 'log-info', ts: '12:04:13', msg: 'Installing dependencies via npm ci...' },
+    { cls: 'log-info', ts: '12:04:21', msg: 'added 847 packages in 7.8s' },
+    { cls: 'log-run',  ts: '12:04:22', msg: 'Running build script: npm run build' },
+    { cls: 'log-info', ts: '12:04:25', msg: '> aurora-api@1.0.0 build' },
+    { cls: 'log-info', ts: '12:04:25', msg: '> next build' },
+    { cls: 'log-warn', ts: '12:04:28', msg: 'Warning: 3 unused exports detected' },
+    { cls: 'log-info', ts: '12:04:35', msg: 'Compiled successfully in 6.4s' },
+    { cls: 'log-run',  ts: '12:04:36', msg: 'Building container image...' },
+    { cls: 'log-info', ts: '12:04:42', msg: 'Container built: sha256:9a8b3c1d\u2026' },
+    { cls: 'log-run',  ts: '12:04:43', msg: 'Routing traffic \u2192 aurora-api.kumbula.cloud' },
+    { cls: 'log-ok',   ts: '12:04:44', msg: '\u2713 Deployment successful. Build time: 33s' },
+  ];
+
+  function resetBuildLog() {
+    var log = document.getElementById('buildLog');
+    if (!log) return;
+    while (log.firstChild) log.removeChild(log.firstChild);
+
+    var line = document.createElement('div');
+    line.className = 'log-line log-info';
+
+    var ts = document.createElement('span');
+    ts.className = 'log-ts';
+    ts.textContent = '12:04:02';
+
+    var msg = document.createElement('span');
+    msg.className = 'log-msg';
+    msg.textContent = 'Waiting for build trigger...';
+
+    line.appendChild(ts);
+    line.appendChild(msg);
+    log.appendChild(line);
+
+    var badge = document.getElementById('deployBadge');
+    if (badge) {
+      badge.className = 'status-badge building';
+      while (badge.firstChild) badge.removeChild(badge.firstChild);
+
+      var dot = document.createElement('span');
+      dot.className = 'pulse-dot';
+
+      var statusText = document.createElement('span');
+      statusText.id = 'deployStatusText';
+      statusText.textContent = 'Awaiting Push';
+
+      badge.appendChild(dot);
+      badge.appendChild(statusText);
+    }
+  }
+
+  function appendLogLine(logEl, cls, ts, msg) {
+    var line = document.createElement('div');
+    line.className = 'log-line ' + cls;
+
+    var tsEl = document.createElement('span');
+    tsEl.className = 'log-ts';
+    tsEl.textContent = ts;
+
+    var msgEl = document.createElement('span');
+    msgEl.className = 'log-msg';
+    msgEl.textContent = msg;
+
+    line.appendChild(tsEl);
+    line.appendChild(msgEl);
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function triggerDeploy() {
+    if (deployRunning) return;
+    deployRunning = true;
+
+    var badge = document.getElementById('deployBadge');
+    if (badge) {
+      badge.className = 'status-badge building';
+      while (badge.firstChild) badge.removeChild(badge.firstChild);
+      var dot = document.createElement('span');
+      dot.className = 'pulse-dot';
+      var st = document.createElement('span');
+      st.textContent = 'Building';
+      badge.appendChild(dot);
+      badge.appendChild(st);
+    }
+
+    var log = document.getElementById('buildLog');
+    if (!log) return;
+    while (log.firstChild) log.removeChild(log.firstChild);
+
+    var idx = 0;
+    function appendNext() {
+      if (idx >= LOG_LINES.length) {
+        var b = document.getElementById('deployBadge');
+        if (b) {
+          b.className = 'status-badge running';
+          while (b.firstChild) b.removeChild(b.firstChild);
+          var d2 = document.createElement('span');
+          d2.className = 'pulse-dot';
+          var s2 = document.createElement('span');
+          s2.textContent = 'Running';
+          b.appendChild(d2);
+          b.appendChild(s2);
+        }
+        deployRunning = false;
+        return;
+      }
+      var entry = LOG_LINES[idx++];
+      appendLogLine(log, entry.cls, entry.ts, entry.msg);
+      var delay = idx === LOG_LINES.length ? 600 : Math.random() * 500 + 180;
+      setTimeout(appendNext, delay);
+    }
+    appendNext();
+  }
+  window.triggerDeploy = triggerDeploy;
+
+  /* ─── Redeploy ─── */
+  function redeployProject() {
+    var overlay = document.getElementById('transOverlay');
+    overlay.classList.add('flash');
+    setTimeout(function () {
+      goToStep(4);
+      overlay.classList.remove('flash');
+      setTimeout(function () {
+        resetBuildLog();
+        deployRunning = false;
+        setTimeout(triggerDeploy, 400);
+      }, 100);
+    }, 160);
+  }
+  window.redeployProject = redeployProject;
+
+  /* ─── Init ─── */
+  syncProjectName();
+}());
+</script>
+</body>
+</html>

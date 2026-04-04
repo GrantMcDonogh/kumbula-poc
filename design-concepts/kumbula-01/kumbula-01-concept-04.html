@@ -1,0 +1,2106 @@
+<!-- Concept 4: Visual Style — Neo-Brutalist -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440">
+  <title>KumbulaCloud — Neo-Brutalist Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Work+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:        #0d0d0d;
+      --white:     #ffffff;
+      --yellow:    #f5e642;
+      --coral:     #ff5252;
+      --green:     #00e676;
+      --border:    3px solid #ffffff;
+      --border-y:  3px solid #f5e642;
+      --border-r:  3px solid #ff5252;
+      --border-g:  3px solid #00e676;
+      --mono:      'Space Mono', monospace;
+      --sans:      'Work Sans', sans-serif;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.4;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ============================================================
+       NOISE / GRAIN OVERLAY
+    ============================================================ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+    }
+
+    /* ============================================================
+       CROSSHATCH PATTERN (used as texture block)
+    ============================================================ */
+    .crosshatch {
+      background-color: transparent;
+      background-image:
+        repeating-linear-gradient(
+          45deg,
+          rgba(255,255,255,0.06) 0px,
+          rgba(255,255,255,0.06) 1px,
+          transparent 1px,
+          transparent 8px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          rgba(255,255,255,0.06) 0px,
+          rgba(255,255,255,0.06) 1px,
+          transparent 1px,
+          transparent 8px
+        );
+    }
+
+    /* ============================================================
+       LAYOUT WRAPPER
+    ============================================================ */
+    .page-wrap {
+      max-width: 1440px;
+      min-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+    .site-header {
+      border-bottom: 4px solid var(--white);
+      padding: 0;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: stretch;
+      height: 64px;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      padding: 0 28px 0 0;
+      border-right: 3px solid var(--white);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .logo-mark {
+      width: 36px;
+      height: 36px;
+      background: var(--yellow);
+      border: 3px solid var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--bg);
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: 0.05em;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    .logo-text span {
+      color: var(--yellow);
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: stretch;
+      margin-left: 0;
+    }
+
+    .header-nav a {
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      border-right: 3px solid rgba(255,255,255,0.15);
+      transition: color 0.08s linear, background 0.08s linear;
+    }
+
+    .header-nav a:hover {
+      color: var(--yellow);
+      background: rgba(245,230,66,0.07);
+    }
+
+    .header-nav a.active {
+      color: var(--white);
+      background: rgba(255,255,255,0.05);
+      border-bottom: 4px solid var(--yellow);
+      margin-bottom: -4px;
+    }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border-left: 3px solid rgba(255,255,255,0.15);
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px;
+      border-right: 3px solid rgba(255,255,255,0.15);
+      height: 100%;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: var(--coral);
+      border: 2px solid var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--white);
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    .header-btn {
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      background: none;
+      border: none;
+      transition: color 0.08s linear;
+    }
+
+    .header-btn:hover { color: var(--coral); }
+
+    /* ============================================================
+       SUB-HEADER / PAGE TITLE BAR
+    ============================================================ */
+    .page-title-bar {
+      border-bottom: 3px solid rgba(255,255,255,0.2);
+      background: #111111;
+      padding: 20px 0;
+    }
+
+    .page-title-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .page-title-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .page-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .page-title {
+      font-family: var(--mono);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+
+    .page-title em {
+      color: var(--yellow);
+      font-style: normal;
+    }
+
+    .page-title-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .meta-count {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .meta-count strong {
+      color: var(--yellow);
+      font-size: 16px;
+    }
+
+    .btn-create {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--yellow);
+      color: var(--bg);
+      border: 3px solid var(--white);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: transform 0.06s linear, box-shadow 0.06s linear;
+      box-shadow: 4px 4px 0 var(--white);
+      position: relative;
+    }
+
+    .btn-create:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--white);
+    }
+
+    .btn-create:active {
+      transform: translate(2px, 2px) scale(0.97);
+      box-shadow: 2px 2px 0 var(--white);
+    }
+
+    .btn-create .plus-icon {
+      font-size: 18px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    /* ============================================================
+       MAIN LAYOUT — 2/3 + 1/3
+    ============================================================ */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      grid-template-rows: auto;
+      gap: 0;
+      min-height: calc(100vh - 160px);
+      border-right: 3px solid var(--white);
+    }
+
+    .main-content {
+      padding: 40px 40px 60px 0;
+      border-right: 3px solid rgba(255,255,255,0.15);
+    }
+
+    .main-sidebar {
+      padding: 40px 0 60px 32px;
+      position: relative;
+    }
+
+    /* ============================================================
+       FILTER / SORT BAR
+    ============================================================ */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 32px;
+      border: 3px solid rgba(255,255,255,0.2);
+    }
+
+    .filter-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.4);
+      padding: 10px 16px;
+      border-right: 3px solid rgba(255,255,255,0.2);
+      flex-shrink: 0;
+    }
+
+    .filter-btn {
+      padding: 10px 18px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.5);
+      background: none;
+      border: none;
+      border-right: 2px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      transition: color 0.06s linear, background 0.06s linear;
+    }
+
+    .filter-btn:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+    .filter-btn.active { color: var(--yellow); background: rgba(245,230,66,0.08); }
+
+    .filter-spacer { flex: 1; }
+
+    .filter-sort {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      border-left: 3px solid rgba(255,255,255,0.2);
+    }
+
+    .filter-sort span {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .filter-sort-val {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    /* ============================================================
+       PROJECT CARDS GRID
+    ============================================================ */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      position: relative;
+    }
+
+    /* intentional grid tension — offset last card */
+    .projects-grid .card:nth-child(5) {
+      grid-column: 1 / 2;
+      transform: translateX(8px);
+    }
+
+    .projects-grid .card:nth-child(6) {
+      grid-column: 2 / 3;
+      transform: translateX(-8px);
+    }
+
+    .card {
+      border: 3px solid var(--white);
+      background: #0d0d0d;
+      padding: 0;
+      position: relative;
+      transition: transform 0.08s linear, box-shadow 0.08s linear;
+      margin: -1px; /* overlap borders */
+    }
+
+    .card:hover {
+      transform: translate(-3px, -3px) !important;
+      box-shadow: 5px 5px 0 var(--yellow);
+      z-index: 10;
+    }
+
+    .card:active {
+      transform: translate(1px, 1px) !important;
+      box-shadow: 2px 2px 0 var(--yellow);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px 14px;
+      border-bottom: 3px solid rgba(255,255,255,0.15);
+    }
+
+    .card-title {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* ============================================================
+       STATUS BADGES — RUBBER STAMP / LABEL TAPE STYLE
+    ============================================================ */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border: 2px solid currentColor;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .badge::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    .badge-running {
+      color: var(--green);
+      background: rgba(0,230,118,0.1);
+    }
+
+    .badge-building {
+      color: var(--yellow);
+      background: rgba(245,230,66,0.1);
+      animation: stamp-pulse 1s steps(1, end) infinite;
+    }
+
+    .badge-failed {
+      color: var(--coral);
+      background: rgba(255,82,82,0.1);
+    }
+
+    .badge-idle {
+      color: rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.04);
+    }
+
+    @keyframes stamp-pulse {
+      0%   { opacity: 1; }
+      50%  { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .card-body {
+      padding: 16px 18px 18px;
+    }
+
+    .card-url {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--yellow);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 12px;
+      word-break: break-all;
+      transition: color 0.06s linear;
+    }
+
+    .card-url:hover { color: var(--white); }
+
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meta-key {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.35);
+      width: 52px;
+      flex-shrink: 0;
+    }
+
+    .meta-val {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .meta-val.branch {
+      color: var(--yellow);
+      background: rgba(245,230,66,0.08);
+      padding: 1px 6px;
+      border-left: 2px solid var(--yellow);
+    }
+
+    .meta-val.hash {
+      color: rgba(255,255,255,0.5);
+      font-size: 10px;
+    }
+
+    .card-footer {
+      border-top: 2px solid rgba(255,255,255,0.1);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .deploy-time {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    .card-action-btn {
+      padding: 5px 12px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: none;
+      border: 2px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.55);
+      cursor: pointer;
+      transition: border-color 0.06s linear, color 0.06s linear, background 0.06s linear;
+    }
+
+    .card-action-btn:hover {
+      border-color: var(--yellow);
+      color: var(--yellow);
+      background: rgba(245,230,66,0.06);
+    }
+
+    .card-action-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* ============================================================
+       SIDEBAR
+    ============================================================ */
+    .sidebar-section {
+      margin-bottom: 32px;
+    }
+
+    .sidebar-heading {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.4);
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--white);
+      margin-bottom: 16px;
+    }
+
+    /* Activity Feed */
+    .activity-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 2px solid rgba(255,255,255,0.08);
+      position: relative;
+    }
+
+    .activity-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: transparent;
+    }
+
+    .activity-item.ev-deploy::before { background: var(--green); }
+    .activity-item.ev-build::before  { background: var(--yellow); }
+    .activity-item.ev-fail::before   { background: var(--coral); }
+
+    .activity-icon {
+      width: 28px;
+      height: 28px;
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .activity-icon.ev-deploy { border-color: var(--green); color: var(--green); }
+    .activity-icon.ev-build  { border-color: var(--yellow); color: var(--yellow); }
+    .activity-icon.ev-fail   { border-color: var(--coral); color: var(--coral); }
+
+    .activity-text {
+      flex: 1;
+    }
+
+    .activity-desc {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+
+    .activity-desc strong {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--yellow);
+    }
+
+    .activity-time {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    /* Usage Block */
+    .usage-block {
+      border: 3px solid rgba(255,255,255,0.2);
+      background: #111111;
+    }
+
+    .usage-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 2px solid rgba(255,255,255,0.08);
+    }
+
+    .usage-row:last-child { border-bottom: none; }
+
+    .usage-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .usage-val {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .usage-bar-wrap {
+      width: 80px;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .usage-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: var(--yellow);
+      transition: width 0.4s linear;
+    }
+
+    .usage-bar.high { background: var(--coral); }
+    .usage-bar.med  { background: var(--yellow); }
+    .usage-bar.low  { background: var(--green); }
+
+    /* Quick Deploy block */
+    .quick-deploy {
+      border: 3px solid var(--yellow);
+      background: rgba(245,230,66,0.04);
+      padding: 16px;
+    }
+
+    .quick-deploy-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--yellow);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quick-deploy-title::before {
+      content: '▶';
+      font-size: 10px;
+    }
+
+    .qd-env-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .qd-env-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      border: 2px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.3);
+    }
+
+    .qd-env-name {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .qd-env-badge {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      letter-spacing: 0.08em;
+    }
+
+    .qd-env-badge.prod { background: var(--coral); color: var(--white); }
+    .qd-env-badge.prev { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); }
+
+    /* ============================================================
+       PROJECT DETAIL SECTION
+    ============================================================ */
+    .section-divider {
+      border: none;
+      border-top: 4px solid var(--white);
+      margin: 0;
+    }
+
+    .detail-section {
+      padding: 48px 0 60px;
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .detail-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .detail-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.35);
+    }
+
+    .detail-title {
+      font-family: var(--mono);
+      font-size: 26px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .detail-title em { color: var(--yellow); font-style: normal; }
+
+    .detail-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    /* ============================================================
+       TABS
+    ============================================================ */
+    .tabs {
+      display: flex;
+      border-bottom: 3px solid var(--white);
+      margin-bottom: 32px;
+    }
+
+    .tab {
+      padding: 12px 24px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.45);
+      cursor: pointer;
+      border: 3px solid transparent;
+      border-bottom: none;
+      transition: color 0.06s linear, background 0.06s linear;
+      position: relative;
+      bottom: -3px;
+    }
+
+    .tab:hover { color: var(--white); }
+
+    .tab.active {
+      color: var(--white);
+      border: 3px solid var(--white);
+      border-bottom: 3px solid var(--bg);
+      background: var(--bg);
+    }
+
+    /* ============================================================
+       DETAIL LAYOUT
+    ============================================================ */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    /* Overview Panel */
+    .overview-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .overview-stat-block {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 3px solid var(--white);
+    }
+
+    .stat-cell {
+      padding: 16px 20px;
+      border-right: 3px solid rgba(255,255,255,0.15);
+      border-bottom: 3px solid rgba(255,255,255,0.15);
+    }
+
+    .stat-cell:nth-child(2n) { border-right: none; }
+    .stat-cell:nth-child(3),
+    .stat-cell:nth-child(4) { border-bottom: none; }
+
+    .stat-key {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 6px;
+    }
+
+    .stat-val {
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .stat-val.yellow { color: var(--yellow); }
+    .stat-val.green  { color: var(--green); }
+    .stat-val.coral  { color: var(--coral); }
+
+    .stat-sub {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 3px;
+    }
+
+    /* Build Log */
+    .build-log {
+      border: 3px solid rgba(255,255,255,0.25);
+      background: #080808;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .build-log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 3px solid rgba(255,255,255,0.2);
+      background: #111111;
+    }
+
+    .build-log-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .build-log-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      animation: blink 0.8s steps(1, end) infinite;
+    }
+
+    @keyframes blink {
+      0%   { opacity: 1; }
+      50%  { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .live-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .build-log-body {
+      padding: 16px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 4px;
+      line-height: 1.5;
+    }
+
+    .log-ts {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+      flex-shrink: 0;
+      width: 90px;
+    }
+
+    .log-msg {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .log-msg.ok     { color: var(--green); }
+    .log-msg.warn   { color: var(--yellow); }
+    .log-msg.err    { color: var(--coral); }
+    .log-msg.dim    { color: rgba(255,255,255,0.35); }
+    .log-msg.bright { color: var(--white); }
+
+    /* ============================================================
+       CODE BLOCK — GIT SETUP
+    ============================================================ */
+    .git-setup-block {
+      border: 3px solid var(--white);
+      background: #080808;
+    }
+
+    .git-setup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-bottom: 3px solid var(--white);
+      background: #151515;
+    }
+
+    .git-setup-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .git-setup-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      background: var(--yellow);
+      color: var(--bg);
+      letter-spacing: 0.08em;
+    }
+
+    .git-setup-body {
+      padding: 20px 22px;
+    }
+
+    .git-step {
+      margin-bottom: 20px;
+    }
+
+    .git-step:last-child { margin-bottom: 0; }
+
+    .git-step-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 8px;
+    }
+
+    .git-cmd {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      border: 2px solid rgba(255,255,255,0.2);
+      background: #040404;
+    }
+
+    .git-cmd-prompt {
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--yellow);
+      background: rgba(245,230,66,0.06);
+      border-right: 2px solid rgba(255,255,255,0.2);
+      flex-shrink: 0;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .git-cmd-text {
+      padding: 10px 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--white);
+      line-height: 1.6;
+      word-break: break-all;
+    }
+
+    .git-cmd-text .kw    { color: var(--yellow); }
+    .git-cmd-text .str   { color: var(--green); }
+    .git-cmd-text .url   { color: var(--coral); }
+    .git-cmd-text .cmt   { color: rgba(255,255,255,0.3); font-style: italic; }
+
+    /* ============================================================
+       ENV VARS PANEL
+    ============================================================ */
+    .env-table {
+      border: 3px solid var(--white);
+      background: #0d0d0d;
+      width: 100%;
+    }
+
+    .env-table-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr 100px 80px;
+      gap: 0;
+      border-bottom: 3px solid var(--white);
+      background: #151515;
+    }
+
+    .env-th {
+      padding: 10px 14px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.4);
+      border-right: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .env-th:last-child { border-right: none; }
+
+    .env-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 100px 80px;
+      gap: 0;
+      border-bottom: 2px solid rgba(255,255,255,0.08);
+      transition: background 0.06s linear;
+    }
+
+    .env-row:last-child { border-bottom: none; }
+
+    .env-row:hover { background: rgba(255,255,255,0.03); }
+
+    .env-cell {
+      padding: 11px 14px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+      border-right: 2px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+    }
+
+    .env-cell:last-child { border-right: none; }
+
+    .env-key { color: var(--yellow); font-weight: 700; }
+
+    .env-val-masked {
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.15em;
+    }
+
+    .env-scope {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      letter-spacing: 0.08em;
+    }
+
+    .env-scope.prod { background: rgba(255,82,82,0.2); color: var(--coral); border: 1px solid var(--coral); }
+    .env-scope.all  { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.2); }
+
+    .env-action {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      cursor: pointer;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      transition: color 0.06s linear;
+    }
+
+    .env-action:hover { color: var(--coral); }
+
+    /* ============================================================
+       BUILDS LIST
+    ============================================================ */
+    .builds-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 3px solid var(--white);
+    }
+
+    .build-item {
+      display: grid;
+      grid-template-columns: 40px 1fr auto auto 120px;
+      align-items: center;
+      gap: 0;
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+      padding: 0;
+      transition: background 0.06s linear;
+    }
+
+    .build-item:last-child { border-bottom: none; }
+    .build-item:hover { background: rgba(255,255,255,0.03); }
+
+    .build-num {
+      padding: 14px 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.25);
+      border-right: 2px solid rgba(255,255,255,0.1);
+      text-align: center;
+    }
+
+    .build-info {
+      padding: 14px 16px;
+      border-right: 2px solid rgba(255,255,255,0.08);
+    }
+
+    .build-commit {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--white);
+      margin-bottom: 3px;
+    }
+
+    .build-branch {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .build-branch span { color: var(--yellow); }
+
+    .build-time {
+      padding: 0 16px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      border-right: 2px solid rgba(255,255,255,0.08);
+      white-space: nowrap;
+    }
+
+    .build-duration {
+      padding: 0 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      border-right: 2px solid rgba(255,255,255,0.08);
+      white-space: nowrap;
+    }
+
+    .build-badge-cell {
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .site-footer {
+      border-top: 4px solid var(--white);
+      padding: 20px 0;
+      background: #111111;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-brand {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .footer-brand em {
+      color: var(--yellow);
+      font-style: normal;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 0;
+    }
+
+    .footer-links a {
+      padding: 4px 14px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      border-right: 2px solid rgba(255,255,255,0.12);
+      transition: color 0.06s linear;
+    }
+
+    .footer-links a:last-child { border-right: none; }
+    .footer-links a:hover { color: var(--yellow); }
+
+    .footer-version {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+    }
+
+    /* ============================================================
+       UTILITY — THICK ACCENT BORDERS
+    ============================================================ */
+    .accent-bar-y {
+      height: 4px;
+      background: var(--yellow);
+      width: 40px;
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    .accent-bar-r {
+      height: 4px;
+      background: var(--coral);
+      width: 40px;
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    .accent-bar-g {
+      height: 4px;
+      background: var(--green);
+      width: 40px;
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    /* ============================================================
+       VISIBLE GRID GUTTER DECORATION
+    ============================================================ */
+    .grid-gutter-mark {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.15);
+      pointer-events: none;
+    }
+
+    .crosshatch-accent {
+      background-image:
+        repeating-linear-gradient(
+          45deg,
+          rgba(245,230,66,0.08) 0px,
+          rgba(245,230,66,0.08) 1px,
+          transparent 1px,
+          transparent 8px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          rgba(245,230,66,0.08) 0px,
+          rgba(245,230,66,0.08) 1px,
+          transparent 1px,
+          transparent 8px
+        );
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER
+  ============================================================ -->
+  <header class="site-header">
+    <div class="page-wrap">
+      <div class="header-inner">
+        <div class="header-logo">
+          <div class="logo-mark">K</div>
+          <span class="logo-text">Kumbula<span>Cloud</span></span>
+        </div>
+        <nav class="header-nav">
+          <a href="#" class="active">Projects</a>
+          <a href="#">Deploys</a>
+          <a href="#">Domains</a>
+          <a href="#">Billing</a>
+          <a href="#">Docs</a>
+        </nav>
+        <div class="header-right">
+          <div class="header-user">
+            <div class="user-avatar">GM</div>
+            <span class="user-name">grant_m</span>
+          </div>
+          <button class="header-btn">Log Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       PAGE TITLE BAR
+  ============================================================ -->
+  <div class="page-title-bar">
+    <div class="page-wrap">
+      <div class="page-title-inner">
+        <div class="page-title-left">
+          <span class="page-label">/ Dashboard</span>
+          <h1 class="page-title">Your <em>Projects</em></h1>
+        </div>
+        <div class="page-title-meta">
+          <span class="meta-count"><strong>7</strong> total &nbsp;·&nbsp; <strong>5</strong> running &nbsp;·&nbsp; <strong>1</strong> building &nbsp;·&nbsp; <strong>1</strong> failed</span>
+          <button class="btn-create">
+            <span class="plus-icon">+</span>
+            Create Project
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MAIN LAYOUT
+  ============================================================ -->
+  <div class="page-wrap">
+    <div class="main-layout">
+
+      <!-- LEFT — PROJECT CARDS -->
+      <main class="main-content">
+
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+          <span class="filter-label">Filter:</span>
+          <button class="filter-btn active">All</button>
+          <button class="filter-btn">Running</button>
+          <button class="filter-btn">Building</button>
+          <button class="filter-btn">Failed</button>
+          <div class="filter-spacer"></div>
+          <div class="filter-sort">
+            <span>Sort:</span>
+            <span class="filter-sort-val">Last Deploy ▾</span>
+          </div>
+        </div>
+
+        <!-- PROJECTS GRID -->
+        <div class="projects-grid" style="position: relative;">
+
+          <span class="grid-gutter-mark">↕ grid / 2-col</span>
+
+          <!-- CARD 1 — RUNNING -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Storefront</span>
+              <span class="badge badge-running">Running</span>
+            </div>
+            <div class="card-body">
+              <a class="card-url" href="#">storefront.kumbula.app</a>
+              <div class="card-meta">
+                <div class="card-meta-row">
+                  <span class="meta-key">Branch</span>
+                  <span class="meta-val branch">main</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Commit</span>
+                  <span class="meta-val hash">a3f7c91 — fix(cart): resolve race condition on checkout</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Region</span>
+                  <span class="meta-val">eu-west-1</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="deploy-time">Deployed 14 mins ago</span>
+              <button class="card-action-btn">View Logs</button>
+            </div>
+          </div>
+
+          <!-- CARD 2 — BUILDING -->
+          <div class="card" style="margin-top: 12px;">
+            <div class="card-header">
+              <span class="card-title">API Gateway</span>
+              <span class="badge badge-building">Building</span>
+            </div>
+            <div class="card-body">
+              <a class="card-url" href="#">api.kumbula.app</a>
+              <div class="card-meta">
+                <div class="card-meta-row">
+                  <span class="meta-key">Branch</span>
+                  <span class="meta-val branch">feat/auth-v2</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Commit</span>
+                  <span class="meta-val hash">9b12d4e — feat(auth): add PKCE OAuth flow</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Build</span>
+                  <span class="meta-val">#47 · Step 3/8: npm install</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="deploy-time">Started 2 mins ago</span>
+              <button class="card-action-btn">Live Logs</button>
+            </div>
+          </div>
+
+          <!-- CARD 3 — RUNNING -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Admin Panel</span>
+              <span class="badge badge-running">Running</span>
+            </div>
+            <div class="card-body">
+              <a class="card-url" href="#">admin.kumbula.app</a>
+              <div class="card-meta">
+                <div class="card-meta-row">
+                  <span class="meta-key">Branch</span>
+                  <span class="meta-val branch">main</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Commit</span>
+                  <span class="meta-val hash">cc8a31f — chore: upgrade next to 14.2.0</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Region</span>
+                  <span class="meta-val">us-east-1</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="deploy-time">Deployed 2 hrs ago</span>
+              <button class="card-action-btn">View Logs</button>
+            </div>
+          </div>
+
+          <!-- CARD 4 — FAILED -->
+          <div class="card" style="border-color: var(--coral);">
+            <div class="card-header" style="border-bottom-color: rgba(255,82,82,0.3);">
+              <span class="card-title" style="color: var(--coral);">Worker Queue</span>
+              <span class="badge badge-failed">Failed</span>
+            </div>
+            <div class="card-body">
+              <a class="card-url" href="#" style="color: rgba(255,82,82,0.8);">workers.kumbula.app</a>
+              <div class="card-meta">
+                <div class="card-meta-row">
+                  <span class="meta-key">Branch</span>
+                  <span class="meta-val branch" style="border-left-color: var(--coral); color: var(--coral); background: rgba(255,82,82,0.08);">hotfix/redis</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Commit</span>
+                  <span class="meta-val hash">f019b2a — fix: increase redis timeout threshold</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Error</span>
+                  <span class="meta-val" style="color: var(--coral); font-size: 10px;">Build failed: cannot find module 'bullmq'</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer" style="border-top-color: rgba(255,82,82,0.2);">
+              <span class="deploy-time" style="color: var(--coral);">Failed 38 mins ago</span>
+              <button class="card-action-btn" style="border-color: rgba(255,82,82,0.4); color: var(--coral);">Error Logs</button>
+            </div>
+          </div>
+
+          <!-- CARD 5 — RUNNING (offset) -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Marketing Site</span>
+              <span class="badge badge-running">Running</span>
+            </div>
+            <div class="card-body">
+              <a class="card-url" href="#">www.kumbula.app</a>
+              <div class="card-meta">
+                <div class="card-meta-row">
+                  <span class="meta-key">Branch</span>
+                  <span class="meta-val branch">main</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Commit</span>
+                  <span class="meta-val hash">e22f9d0 — content: update pricing page copy</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Region</span>
+                  <span class="meta-val">eu-west-1</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="deploy-time">Deployed 5 hrs ago</span>
+              <button class="card-action-btn">View Logs</button>
+            </div>
+          </div>
+
+          <!-- CARD 6 — IDLE (offset) -->
+          <div class="card" style="border-color: rgba(255,255,255,0.35);">
+            <div class="card-header" style="border-bottom-color: rgba(255,255,255,0.1);">
+              <span class="card-title" style="color: rgba(255,255,255,0.5);">Internal Docs</span>
+              <span class="badge badge-idle">Idle</span>
+            </div>
+            <div class="card-body">
+              <a class="card-url" href="#" style="color: rgba(255,255,255,0.35);">docs.kumbula.app</a>
+              <div class="card-meta">
+                <div class="card-meta-row">
+                  <span class="meta-key">Branch</span>
+                  <span class="meta-val branch" style="border-left-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.04);">main</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Commit</span>
+                  <span class="meta-val hash">b77a103 — docs: add API reference for v2</span>
+                </div>
+                <div class="card-meta-row">
+                  <span class="meta-key">Region</span>
+                  <span class="meta-val" style="color: rgba(255,255,255,0.35);">us-east-1</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer" style="border-top-color: rgba(255,255,255,0.06);">
+              <span class="deploy-time">Deployed 3 days ago</span>
+              <button class="card-action-btn">View Logs</button>
+            </div>
+          </div>
+
+        </div><!-- / projects-grid -->
+
+      </main><!-- / main-content -->
+
+      <!-- RIGHT — SIDEBAR -->
+      <aside class="main-sidebar">
+
+        <!-- ACTIVITY FEED -->
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Activity Feed</div>
+          <ul class="activity-list">
+            <li class="activity-item ev-deploy">
+              <div class="activity-icon ev-deploy">✓</div>
+              <div class="activity-text">
+                <div class="activity-desc"><strong>storefront</strong> deployed to production</div>
+                <div class="activity-time">14 minutes ago · build #63</div>
+              </div>
+            </li>
+            <li class="activity-item ev-build">
+              <div class="activity-icon ev-build">⚙</div>
+              <div class="activity-text">
+                <div class="activity-desc"><strong>api-gateway</strong> build started</div>
+                <div class="activity-time">2 minutes ago · feat/auth-v2</div>
+              </div>
+            </li>
+            <li class="activity-item ev-fail">
+              <div class="activity-icon ev-fail">✕</div>
+              <div class="activity-text">
+                <div class="activity-desc"><strong>worker-queue</strong> build failed</div>
+                <div class="activity-time">38 minutes ago · cannot find module</div>
+              </div>
+            </li>
+            <li class="activity-item ev-deploy">
+              <div class="activity-icon ev-deploy">✓</div>
+              <div class="activity-text">
+                <div class="activity-desc"><strong>admin-panel</strong> deployed to production</div>
+                <div class="activity-time">2 hours ago · build #29</div>
+              </div>
+            </li>
+            <li class="activity-item ev-deploy">
+              <div class="activity-icon ev-deploy">✓</div>
+              <div class="activity-text">
+                <div class="activity-desc"><strong>marketing-site</strong> deployed</div>
+                <div class="activity-time">5 hours ago · build #12</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- USAGE -->
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Resource Usage</div>
+          <div class="usage-block">
+            <div class="usage-row">
+              <span class="usage-label">Compute</span>
+              <div class="usage-bar-wrap"><div class="usage-bar med" style="width: 58%;"></div></div>
+              <span class="usage-val">58%</span>
+            </div>
+            <div class="usage-row">
+              <span class="usage-label">Bandwidth</span>
+              <div class="usage-bar-wrap"><div class="usage-bar low" style="width: 23%;"></div></div>
+              <span class="usage-val">23%</span>
+            </div>
+            <div class="usage-row">
+              <span class="usage-label">Storage</span>
+              <div class="usage-bar-wrap"><div class="usage-bar high" style="width: 81%;"></div></div>
+              <span class="usage-val">81%</span>
+            </div>
+            <div class="usage-row">
+              <span class="usage-label">Deploys</span>
+              <div class="usage-bar-wrap"><div class="usage-bar low" style="width: 11%;"></div></div>
+              <span class="usage-val">11 / 100</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK DEPLOY ENV -->
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Active Environments</div>
+          <div class="quick-deploy">
+            <div class="quick-deploy-title">Environments</div>
+            <ul class="qd-env-list">
+              <li class="qd-env-item">
+                <span class="qd-env-name">storefront — v1.9.3</span>
+                <span class="qd-env-badge prod">PROD</span>
+              </li>
+              <li class="qd-env-item">
+                <span class="qd-env-name">api-gateway — v2.0.0-rc4</span>
+                <span class="qd-env-badge prev">PREVIEW</span>
+              </li>
+              <li class="qd-env-item">
+                <span class="qd-env-name">admin-panel — v3.1.0</span>
+                <span class="qd-env-badge prod">PROD</span>
+              </li>
+              <li class="qd-env-item">
+                <span class="qd-env-name">worker-queue — v0.8.1</span>
+                <span class="qd-env-badge prev">HOTFIX</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </aside><!-- / sidebar -->
+
+    </div><!-- / main-layout -->
+  </div><!-- / page-wrap -->
+
+  <!-- ============================================================
+       SECTION DIVIDER
+  ============================================================ -->
+  <hr class="section-divider">
+
+  <!-- ============================================================
+       PROJECT DETAIL SECTION
+  ============================================================ -->
+  <div class="page-wrap">
+    <div class="detail-section">
+
+      <div class="detail-header">
+        <div class="detail-title-block">
+          <span class="detail-eyebrow">/ Project Detail</span>
+          <h2 class="detail-title">Storefront <em>↗</em></h2>
+          <div class="detail-badge-row">
+            <span class="badge badge-running">Running</span>
+            <span style="font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,0.35);">storefront.kumbula.app &nbsp;·&nbsp; eu-west-1 &nbsp;·&nbsp; Node 20.x</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn-create" style="background: transparent; color: var(--white); border-color: rgba(255,255,255,0.4); box-shadow: 3px 3px 0 rgba(255,255,255,0.3);">
+            Redeploy
+          </button>
+          <button class="btn-create" style="box-shadow: 4px 4px 0 var(--white);">
+            + New Deploy
+          </button>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <div class="tab active">Overview</div>
+        <div class="tab">Builds</div>
+        <div class="tab">Environment</div>
+        <div class="tab">Settings</div>
+      </div>
+
+      <!-- TAB CONTENT: OVERVIEW -->
+      <div class="detail-grid">
+
+        <!-- LEFT COLUMN -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+
+          <!-- STATS BLOCK -->
+          <div>
+            <span class="accent-bar-g"></span>
+            <div class="overview-stat-block">
+              <div class="stat-cell">
+                <div class="stat-key">Total Builds</div>
+                <div class="stat-val">63</div>
+                <div class="stat-sub">Last 30 days</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-key">Avg Build Time</div>
+                <div class="stat-val yellow">1m 47s</div>
+                <div class="stat-sub">±12s variance</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-key">Uptime</div>
+                <div class="stat-val green">99.8%</div>
+                <div class="stat-sub">Last 30 days</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-key">Failed Builds</div>
+                <div class="stat-val coral">2</div>
+                <div class="stat-sub">3.2% failure rate</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUILD LOG -->
+          <div>
+            <span class="accent-bar-y"></span>
+            <div class="build-log">
+              <div class="build-log-header">
+                <span class="build-log-title">Build #63 — Live Output</span>
+                <div class="build-log-status">
+                  <div class="live-dot"></div>
+                  <span class="live-label">Finished</span>
+                </div>
+              </div>
+              <div class="build-log-body">
+                <div class="log-line">
+                  <span class="log-ts">14:32:01.002</span>
+                  <span class="log-msg bright">▶ Starting build for commit a3f7c91</span>
+                </div>
+                <div class="log-line">
+                  <span class="log-ts">14:32:01.110</span>
+                  <span class="log-msg dim">Cloning repository... done in 0.8s</span>
+                </div>
+                <div class="log-line">
+                  <span class="log-ts">14:32:02.004</span>
+                  <span class="log-msg">Running npm install</span>
+                </div>
+                <div class="log-line">
+                  <span class="log-ts">14:32:14.233</span>
+                  <span class="log-msg dim">added 1,247 packages in 12.2s</span>
+                </div>
+                <div class="log-line">
+                  <span class="log-ts">14:32:14.900</span>
+                  <span class="log-msg">Running next build</span>
+                </div>
+                <div class="log-line">
+                  <span class="log-ts">14:32:19.401</span>
+                  <span class="log-msg warn">⚠ Large page detected: /checkout (248kB)</span>
+                </div>
+                <div class="log-line">
+                  <span class="log-ts">14:33:48.002</span>
+                  <span class="log-msg ok">✓ Build completed in 1m 46s</span>
+                </div>
+                <div class="log-line">
+                  <span class="log-ts">14:33:48.120</span>
+                  <span class="log-msg ok">✓ Deployed to storefront.kumbula.app</span>
+                </div>
+                <div class="log-line">
+                  <span class="log-ts">14:33:48.500</span>
+                  <span class="log-msg dim">DNS propagation complete. All regions active.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+
+          <!-- GIT SETUP BLOCK -->
+          <div>
+            <span class="accent-bar-y"></span>
+            <div class="git-setup-block">
+              <div class="git-setup-header">
+                <span class="git-setup-title">Git Push to Deploy</span>
+                <span class="git-setup-tag">Setup Guide</span>
+              </div>
+              <div class="git-setup-body">
+
+                <div class="git-step">
+                  <div class="git-step-label">Step 1 — Init your repo</div>
+                  <div class="git-cmd">
+                    <span class="git-cmd-prompt">$</span>
+                    <span class="git-cmd-text"><span class="kw">git</span> init &amp;&amp; <span class="kw">git</span> add . &amp;&amp; <span class="kw">git</span> commit -m <span class="str">"init"</span></span>
+                  </div>
+                </div>
+
+                <div class="git-step">
+                  <div class="git-step-label">Step 2 — Add KumbulaCloud remote</div>
+                  <div class="git-cmd">
+                    <span class="git-cmd-prompt">$</span>
+                    <span class="git-cmd-text"><span class="kw">git</span> remote add kumbula <span class="url">git@kumbula.app:grant_m/storefront.git</span></span>
+                  </div>
+                </div>
+
+                <div class="git-step">
+                  <div class="git-step-label">Step 3 — Push &amp; trigger deploy</div>
+                  <div class="git-cmd">
+                    <span class="git-cmd-prompt">$</span>
+                    <span class="git-cmd-text"><span class="kw">git</span> push kumbula main <span class="cmt">&#35; triggers build automatically</span></span>
+                  </div>
+                </div>
+
+                <div class="git-step">
+                  <div class="git-step-label">Step 4 — Monitor build</div>
+                  <div class="git-cmd">
+                    <span class="git-cmd-prompt">$</span>
+                    <span class="git-cmd-text"><span class="kw">kumbula</span> logs --project storefront --follow</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- RECENT BUILDS MINI-LIST -->
+          <div>
+            <span class="accent-bar-r"></span>
+            <div class="builds-list">
+              <div class="build-item" style="background: rgba(255,255,255,0.03);">
+                <span class="build-num">#63</span>
+                <div class="build-info">
+                  <div class="build-commit">fix(cart): resolve race condition on checkout</div>
+                  <div class="build-branch">a3f7c91 — <span>main</span></div>
+                </div>
+                <span class="build-time">14 mins ago</span>
+                <span class="build-duration">1m 46s</span>
+                <div class="build-badge-cell"><span class="badge badge-running">Running</span></div>
+              </div>
+              <div class="build-item">
+                <span class="build-num">#62</span>
+                <div class="build-info">
+                  <div class="build-commit">feat(search): add Algolia integration</div>
+                  <div class="build-branch">d7e9a12 — <span>main</span></div>
+                </div>
+                <span class="build-time">3 hrs ago</span>
+                <span class="build-duration">1m 52s</span>
+                <div class="build-badge-cell"><span class="badge badge-running" style="opacity: 0.5;">Prev</span></div>
+              </div>
+              <div class="build-item">
+                <span class="build-num">#61</span>
+                <div class="build-info">
+                  <div class="build-commit">chore: bump react-query to 5.x</div>
+                  <div class="build-branch">b11c7f3 — <span>main</span></div>
+                </div>
+                <span class="build-time">Yesterday</span>
+                <span class="build-duration">2m 03s</span>
+                <div class="build-badge-cell"><span class="badge badge-failed">Failed</span></div>
+              </div>
+              <div class="build-item">
+                <span class="build-num">#60</span>
+                <div class="build-info">
+                  <div class="build-commit">fix: revert react-query upgrade</div>
+                  <div class="build-branch">9c2d441 — <span>main</span></div>
+                </div>
+                <span class="build-time">Yesterday</span>
+                <span class="build-duration">1m 39s</span>
+                <div class="build-badge-cell"><span class="badge badge-running" style="opacity: 0.5;">Prev</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div><!-- / detail-grid -->
+
+      <!-- ENV VARS TABLE -->
+      <div style="margin-top: 48px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <div>
+            <span class="accent-bar-y" style="margin-bottom: 8px;"></span>
+            <h3 style="font-family: var(--mono); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--white);">Environment Variables</h3>
+          </div>
+          <button class="btn-create" style="font-size: 11px; padding: 9px 18px; box-shadow: 3px 3px 0 var(--white);">
+            <span class="plus-icon" style="font-size: 14px;">+</span>
+            Add Variable
+          </button>
+        </div>
+        <div class="env-table">
+          <div class="env-table-header">
+            <div class="env-th">Key</div>
+            <div class="env-th">Value</div>
+            <div class="env-th">Scope</div>
+            <div class="env-th">Actions</div>
+          </div>
+          <div class="env-row">
+            <div class="env-cell env-key">DATABASE_URL</div>
+            <div class="env-cell"><span class="env-val-masked">••••••••••••••••••••••••••••</span></div>
+            <div class="env-cell"><span class="env-scope prod">Production</span></div>
+            <div class="env-cell"><span class="env-action">Edit ×</span></div>
+          </div>
+          <div class="env-row">
+            <div class="env-cell env-key">NEXT_PUBLIC_API_URL</div>
+            <div class="env-cell"><span class="meta-val" style="font-size: 11px; color: rgba(255,255,255,0.6);">https://api.kumbula.app/v2</span></div>
+            <div class="env-cell"><span class="env-scope all">All</span></div>
+            <div class="env-cell"><span class="env-action">Edit ×</span></div>
+          </div>
+          <div class="env-row">
+            <div class="env-cell env-key">ALGOLIA_API_KEY</div>
+            <div class="env-cell"><span class="env-val-masked">••••••••••••••••••••</span></div>
+            <div class="env-cell"><span class="env-scope prod">Production</span></div>
+            <div class="env-cell"><span class="env-action">Edit ×</span></div>
+          </div>
+          <div class="env-row">
+            <div class="env-cell env-key">STRIPE_SECRET_KEY</div>
+            <div class="env-cell"><span class="env-val-masked">••••••••••••••••••••••••</span></div>
+            <div class="env-cell"><span class="env-scope prod">Production</span></div>
+            <div class="env-cell"><span class="env-action">Edit ×</span></div>
+          </div>
+          <div class="env-row">
+            <div class="env-cell env-key">NODE_ENV</div>
+            <div class="env-cell"><span class="meta-val" style="font-size: 11px; color: var(--green);">production</span></div>
+            <div class="env-cell"><span class="env-scope all">All</span></div>
+            <div class="env-cell"><span class="env-action">Edit ×</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- / detail-section -->
+  </div><!-- / page-wrap -->
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
+  <footer class="site-footer">
+    <div class="page-wrap">
+      <div class="footer-inner">
+        <span class="footer-brand"><em>Kumbula</em>Cloud &nbsp;// PaaS</span>
+        <div class="footer-links">
+          <a href="#">Status</a>
+          <a href="#">Docs</a>
+          <a href="#">API</a>
+          <a href="#">Support</a>
+          <a href="#">Privacy</a>
+        </div>
+        <span class="footer-version">Platform v2.4.1 · Node 20.x · Build engine 3.0</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

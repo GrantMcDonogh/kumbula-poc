@@ -1,0 +1,1696 @@
+<!-- Concept 1: Layout Structure — Swiss Minimalist Sidebar -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KumbulaCloud — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── Design Tokens ─────────────────────────────────────────── */
+    :root {
+      --bg-base:        #0a0a0f;
+      --bg-surface:     #0f0f17;
+      --bg-elevated:    #14141e;
+      --bg-overlay:     #1a1a2e;
+      --bg-hover:       #1e1e30;
+      --bg-active:      #20203a;
+
+      --border-subtle:  rgba(255,255,255,0.05);
+      --border-default: rgba(255,255,255,0.09);
+      --border-strong:  rgba(255,255,255,0.15);
+
+      --text-primary:   #f0f0f8;
+      --text-secondary: #9090b0;
+      --text-tertiary:  #5a5a78;
+      --text-disabled:  #3a3a52;
+
+      --accent-teal:    #00d4aa;
+      --accent-cyan:    #00b8d4;
+      --accent-teal-dim: rgba(0,212,170,0.12);
+      --accent-teal-glow: rgba(0,212,170,0.25);
+      --accent-cyan-dim: rgba(0,184,212,0.10);
+
+      --status-running: #00d4aa;
+      --status-building: #f0a500;
+      --status-failed:  #e05560;
+      --status-idle:    #5a5a78;
+
+      --status-running-bg: rgba(0,212,170,0.10);
+      --status-building-bg: rgba(240,165,0,0.10);
+      --status-failed-bg: rgba(224,85,96,0.10);
+      --status-idle-bg: rgba(90,90,120,0.10);
+
+      --sidebar-width:  260px;
+      --radius-sm:      4px;
+      --radius-md:      6px;
+      --radius-lg:      10px;
+
+      --font-sans:      'Space Grotesk', sans-serif;
+      --font-mono:      'IBM Plex Mono', monospace;
+
+      --shadow-sm:      0 1px 3px rgba(0,0,0,0.4);
+      --shadow-md:      0 4px 16px rgba(0,0,0,0.5);
+      --shadow-lg:      0 8px 32px rgba(0,0,0,0.6);
+      --shadow-teal:    0 0 24px rgba(0,212,170,0.15);
+
+      --transition-fast: 120ms ease;
+      --transition-base: 200ms ease;
+      --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ─── Reset & Base ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Subtle grid texture overlay ──────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── Layout Shell ──────────────────────────────────────────── */
+    .shell {
+      display: flex;
+      width: 1440px;
+      height: 900px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100%;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: relative;
+      animation: slideInLeft 0.5s cubic-bezier(0.4,0,0.2,1) both;
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-20px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+
+    /* Sidebar — Logo / Brand */
+    .sidebar-brand {
+      padding: 20px 20px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan));
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-teal);
+    }
+
+    .brand-mark svg {
+      width: 16px;
+      height: 16px;
+      fill: #0a0a0f;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .brand-tagline {
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-tertiary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    /* Sidebar — New Project */
+    .sidebar-new-project {
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .btn-new-project {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 9px 14px;
+      background: var(--accent-teal-dim);
+      border: 1px solid rgba(0,212,170,0.25);
+      border-radius: var(--radius-md);
+      color: var(--accent-teal);
+      font-family: var(--font-sans);
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-fast);
+    }
+
+    .btn-new-project:hover {
+      background: rgba(0,212,170,0.18);
+      border-color: rgba(0,212,170,0.4);
+      box-shadow: 0 0 16px rgba(0,212,170,0.18);
+      transform: translateY(-1px);
+    }
+
+    .btn-new-project:active {
+      transform: translateY(0);
+    }
+
+    .btn-new-project .plus-icon {
+      width: 18px;
+      height: 18px;
+      background: rgba(0,212,170,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    /* Sidebar — Section label */
+    .sidebar-section-label {
+      padding: 14px 20px 8px;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+
+    /* Sidebar — Project List */
+    .sidebar-projects {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-default) transparent;
+    }
+
+    .sidebar-projects::-webkit-scrollbar { width: 4px; }
+    .sidebar-projects::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-projects::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 2px; }
+
+    .project-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background var(--transition-fast), transform var(--transition-fast);
+      margin-bottom: 2px;
+      animation: fadeSlideIn 0.4s ease both;
+    }
+
+    .project-item:nth-child(1) { animation-delay: 0.08s; }
+    .project-item:nth-child(2) { animation-delay: 0.14s; }
+    .project-item:nth-child(3) { animation-delay: 0.20s; }
+    .project-item:nth-child(4) { animation-delay: 0.26s; }
+    .project-item:nth-child(5) { animation-delay: 0.32s; }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .project-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .project-item.active {
+      background: var(--bg-active);
+    }
+
+    .project-item.active .project-name {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .status-dot.running {
+      background: var(--status-running);
+      box-shadow: 0 0 6px var(--status-running);
+    }
+
+    .status-dot.running::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: var(--status-running);
+      opacity: 0.3;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1);   opacity: 0.3; }
+      50%       { transform: scale(1.8); opacity: 0; }
+    }
+
+    .status-dot.building {
+      background: var(--status-building);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    .status-dot.failed {
+      background: var(--status-failed);
+      box-shadow: 0 0 5px var(--status-failed);
+    }
+
+    .status-dot.idle {
+      background: var(--status-idle);
+    }
+
+    .project-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .project-name {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: var(--font-mono);
+      letter-spacing: 0.01em;
+      transition: color var(--transition-fast);
+    }
+
+    .project-meta {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .project-arrow {
+      font-size: 11px;
+      color: var(--text-disabled);
+      transition: color var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .project-item.active .project-arrow,
+    .project-item:hover .project-arrow {
+      color: var(--text-tertiary);
+      transform: translateX(2px);
+    }
+
+    /* Sidebar — Divider */
+    .sidebar-divider {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 8px 16px;
+    }
+
+    /* Sidebar — Nav items */
+    .sidebar-nav {
+      padding: 8px 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      margin-bottom: 1px;
+    }
+
+    .nav-item:hover { background: var(--bg-hover); }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+    }
+
+    /* Sidebar — User footer */
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      border-radius: 0 0 0 0;
+    }
+
+    .sidebar-footer:hover { background: var(--bg-hover); }
+
+    .user-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2a3a6a, #1a4a5a);
+      border: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-teal);
+      flex-shrink: 0;
+      letter-spacing: 0.04em;
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-plan {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-top: 1px;
+    }
+
+    .user-chevron {
+      font-size: 11px;
+      color: var(--text-disabled);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════════════════════════ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--bg-base);
+      animation: fadeIn 0.5s ease 0.1s both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ─── Top bar ─────────────────────────────────────────────── */
+    .topbar {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      flex-shrink: 0;
+    }
+
+    .topbar-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--text-tertiary);
+    }
+
+    .topbar-breadcrumb .crumb-current {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .topbar-breadcrumb .crumb-sep {
+      color: var(--text-disabled);
+      font-size: 14px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .topbar-btn.ghost {
+      background: transparent;
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+    }
+
+    .topbar-btn.ghost:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+
+    .topbar-btn.primary {
+      background: var(--accent-teal-dim);
+      border: 1px solid rgba(0,212,170,0.3);
+      color: var(--accent-teal);
+    }
+
+    .topbar-btn.primary:hover {
+      background: rgba(0,212,170,0.2);
+      box-shadow: 0 0 14px rgba(0,212,170,0.15);
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .status-pill.running {
+      background: var(--status-running-bg);
+      color: var(--status-running);
+      border: 1px solid rgba(0,212,170,0.2);
+    }
+
+    .status-pill .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-pill.running .dot {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* ─── Project Header ─────────────────────────────────────── */
+    .project-header {
+      padding: 28px 32px 0;
+      animation: slideUp 0.45s cubic-bezier(0.4,0,0.2,1) 0.15s both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .project-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .project-title-block {}
+
+    .project-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+
+    .project-url {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .project-url-text {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--accent-teal);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: color var(--transition-fast);
+    }
+
+    .project-url-text:hover { color: #00e8be; }
+
+    .url-icon {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .header-status-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ─── Tabs ─────────────────────────────────────────────────── */
+    .tabs-bar {
+      padding: 20px 32px 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 0;
+      border-bottom: 1px solid var(--border-subtle);
+      animation: slideUp 0.45s cubic-bezier(0.4,0,0.2,1) 0.2s both;
+    }
+
+    .tab {
+      padding: 10px 18px 11px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color var(--transition-base), border-color var(--transition-base);
+      letter-spacing: 0.02em;
+      position: relative;
+      bottom: -1px;
+    }
+
+    .tab:hover { color: var(--text-secondary); }
+
+    .tab.active {
+      color: var(--accent-teal);
+      border-bottom-color: var(--accent-teal);
+    }
+
+    /* ─── Content Area ─────────────────────────────────────────── */
+    .content {
+      flex: 1;
+      padding: 28px 32px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      grid-template-rows: auto auto 1fr;
+      gap: 20px;
+      align-content: start;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-default) transparent;
+    }
+
+    .content::-webkit-scrollbar { width: 4px; }
+    .content::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 2px; }
+
+    /* ─── Cards ─────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      transition: border-color var(--transition-base), box-shadow var(--transition-base);
+      animation: cardReveal 0.5s cubic-bezier(0.4,0,0.2,1) both;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.25s; }
+    .card:nth-child(2) { animation-delay: 0.30s; }
+    .card:nth-child(3) { animation-delay: 0.35s; }
+    .card:nth-child(4) { animation-delay: 0.40s; }
+
+    @keyframes cardReveal {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:hover {
+      border-color: var(--border-default);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+
+    .card-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .card-badge.teal {
+      background: var(--accent-teal-dim);
+      color: var(--accent-teal);
+      border: 1px solid rgba(0,212,170,0.2);
+    }
+
+    /* ─── Deployment Overview Card ────────────────────────────── */
+    .deploy-overview {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .deploy-stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .deploy-stat {
+      background: var(--bg-overlay);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .deploy-stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .deploy-stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .deploy-stat-value.teal { color: var(--accent-teal); }
+    .deploy-stat-value.orange { color: var(--status-building); }
+
+    .deploy-stat-sub {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+      margin-top: 1px;
+    }
+
+    /* Last build row */
+    .last-build-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg-overlay);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      transition: border-color var(--transition-fast);
+    }
+
+    .last-build-row:hover { border-color: var(--border-default); }
+
+    .build-commit-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+      flex-shrink: 0;
+      box-shadow: 0 0 6px var(--accent-teal);
+    }
+
+    .build-commit-info { flex: 1; min-width: 0; }
+
+    .build-commit-hash {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent-cyan);
+      letter-spacing: 0.04em;
+    }
+
+    .build-commit-msg {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .build-time {
+      font-size: 10.5px;
+      font-family: var(--font-mono);
+      color: var(--text-tertiary);
+      white-space: nowrap;
+    }
+
+    .build-duration-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: rgba(0,212,170,0.08);
+      color: var(--accent-teal);
+      border: 1px solid rgba(0,212,170,0.15);
+    }
+
+    /* ─── Git Remote Card ────────────────────────────────────── */
+    .git-card {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .git-instructions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .git-step {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .git-step-label {
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-num {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg-overlay);
+      border: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+
+    .code-block {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0d0d18;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      gap: 12px;
+      transition: border-color var(--transition-fast), background var(--transition-fast);
+      cursor: text;
+    }
+
+    .code-block:hover {
+      border-color: rgba(0,212,170,0.25);
+      background: #0f0f1c;
+    }
+
+    .code-block code {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      letter-spacing: 0.02em;
+      line-height: 1.5;
+      white-space: pre;
+      flex: 1;
+    }
+
+    .code-block code .cmd-keyword { color: var(--accent-teal); }
+    .code-block code .cmd-arg     { color: #c0c0e8; }
+    .code-block code .cmd-url     { color: var(--accent-cyan); }
+    .code-block code .cmd-flag    { color: var(--status-building); }
+    .code-block code .cmd-comment { color: var(--text-tertiary); font-style: italic; }
+
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-overlay);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-tertiary);
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-teal-dim);
+      color: var(--accent-teal);
+      border-color: rgba(0,212,170,0.25);
+    }
+
+    .copy-btn svg { width: 11px; height: 11px; }
+
+    .git-divider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 2px 0;
+    }
+
+    .git-divider-line { flex: 1; height: 1px; background: var(--border-subtle); }
+    .git-divider-text { font-size: 10px; color: var(--text-disabled); }
+
+    /* ─── Right column — Info cards ─────────────────────────── */
+    .side-cards {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Project Info card */
+    .info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .info-row:first-child { padding-top: 0; }
+
+    .info-key {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    .info-val {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      text-align: right;
+    }
+
+    .info-val.accent { color: var(--accent-teal); }
+
+    .info-val-link {
+      color: var(--accent-cyan);
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      transition: color var(--transition-fast);
+    }
+
+    .info-val-link:hover { color: #00d4f5; }
+
+    /* Env vars card */
+    .env-count-display {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .env-count-num {
+      font-size: 36px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .env-count-meta { flex: 1; }
+
+    .env-count-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .env-count-sub {
+      font-size: 10.5px;
+      color: var(--text-tertiary);
+      margin-top: 3px;
+    }
+
+    .env-quick-list {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .env-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      background: var(--bg-overlay);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .env-key {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--accent-cyan);
+      flex: 1;
+    }
+
+    .env-val-mask {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-disabled);
+      letter-spacing: 0.08em;
+    }
+
+    .env-btn-row {
+      margin-top: 12px;
+    }
+
+    .btn-sm {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .btn-sm.ghost {
+      background: transparent;
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+    }
+
+    .btn-sm.ghost:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+
+    /* Activity / Health card */
+    .health-bars {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 36px;
+    }
+
+    .health-bar {
+      flex: 1;
+      border-radius: 2px;
+      transition: opacity var(--transition-fast);
+    }
+
+    .health-bar:hover { opacity: 0.8; }
+
+    .health-bar.ok   { background: var(--accent-teal); opacity: 0.7; }
+    .health-bar.warn { background: var(--status-building); opacity: 0.7; }
+    .health-bar.fail { background: var(--status-failed); opacity: 0.7; }
+
+    .health-summary {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .health-summary strong {
+      color: var(--accent-teal);
+      font-weight: 600;
+    }
+
+    /* ─── Bottom quick actions ───────────────────────────────── */
+    .quick-actions {
+      grid-column: 1 / 3;
+      grid-row: 3;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      animation: cardReveal 0.5s cubic-bezier(0.4,0,0.2,1) 0.45s both;
+    }
+
+    .qa-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-right: 6px;
+    }
+
+    .qa-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .qa-btn:hover { transform: translateY(-1px); }
+    .qa-btn:active { transform: translateY(0); }
+
+    .qa-btn.default {
+      background: var(--bg-overlay);
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+    }
+
+    .qa-btn.default:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+
+    .qa-btn.danger {
+      background: rgba(224,85,96,0.08);
+      border: 1px solid rgba(224,85,96,0.2);
+      color: var(--status-failed);
+    }
+
+    .qa-btn.danger:hover {
+      background: rgba(224,85,96,0.14);
+    }
+
+    .qa-sep {
+      flex: 1;
+    }
+
+    /* ─── Scrollbar for content ──────────────────────────────── */
+    .content { scrollbar-width: thin; scrollbar-color: var(--border-default) transparent; }
+
+    /* ─── Teal gradient accent line at top of sidebar ───────── */
+    .sidebar::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-teal), var(--accent-cyan), transparent);
+      opacity: 0.8;
+    }
+
+    /* ─── Highlight active project in sidebar ───────────────── */
+    .project-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 2px;
+      top: 4px;
+      bottom: 4px;
+      background: var(--accent-teal);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .project-item { position: relative; }
+
+    /* ─── Loading bar animation at top ──────────────────────── */
+    .loading-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-teal), var(--accent-cyan));
+      animation: loadBar 1.2s cubic-bezier(0.4,0,0.2,1) forwards;
+      z-index: 999;
+    }
+
+    @keyframes loadBar {
+      0%   { width: 0%;   opacity: 1; }
+      70%  { width: 85%;  opacity: 1; }
+      90%  { width: 100%; opacity: 1; }
+      100% { width: 100%; opacity: 0; }
+    }
+
+    /* ─── Tooltip ────────────────────────────────────────────── */
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-overlay);
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-family: var(--font-sans);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- Page load progress bar -->
+<div class="loading-bar"></div>
+
+<div class="shell">
+
+  <!-- ═══════════════════════════════ SIDEBAR ═══════════════════ -->
+  <aside class="sidebar">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="brand-mark">
+        <!-- K monogram as SVG -->
+        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 2h2v5l4-5h2.5L7 8l4.5 6H9L5.5 9.5 5 10v4H3V2z"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">KumbulaCloud</span>
+        <span class="brand-tagline">Platform as a Service</span>
+      </div>
+    </div>
+
+    <!-- New Project -->
+    <div class="sidebar-new-project">
+      <button class="btn-new-project" data-tip="Start a new deployment">
+        <span class="plus-icon">+</span>
+        New Project
+      </button>
+    </div>
+
+    <!-- Projects list -->
+    <div class="sidebar-section-label">Projects</div>
+    <div class="sidebar-projects">
+
+      <div class="project-item active">
+        <span class="status-dot running"></span>
+        <div class="project-info">
+          <div class="project-name">api-gateway</div>
+          <div class="project-meta">Deployed 4m ago</div>
+        </div>
+        <span class="project-arrow">›</span>
+      </div>
+
+      <div class="project-item">
+        <span class="status-dot running"></span>
+        <div class="project-info">
+          <div class="project-name">user-service</div>
+          <div class="project-meta">Deployed 2h ago</div>
+        </div>
+        <span class="project-arrow">›</span>
+      </div>
+
+      <div class="project-item">
+        <span class="status-dot building"></span>
+        <div class="project-info">
+          <div class="project-name">landing-page</div>
+          <div class="project-meta">Building…</div>
+        </div>
+        <span class="project-arrow">›</span>
+      </div>
+
+      <div class="project-item">
+        <span class="status-dot failed"></span>
+        <div class="project-info">
+          <div class="project-name">payment-worker</div>
+          <div class="project-meta">Failed 1h ago</div>
+        </div>
+        <span class="project-arrow">›</span>
+      </div>
+
+      <div class="project-item">
+        <span class="status-dot idle"></span>
+        <div class="project-info">
+          <div class="project-name">notification-svc</div>
+          <div class="project-meta">Idle · no builds</div>
+        </div>
+        <span class="project-arrow">›</span>
+      </div>
+
+    </div>
+
+    <!-- Global nav -->
+    <div class="sidebar-divider"></div>
+    <nav class="sidebar-nav">
+      <div class="nav-item">
+        <span class="nav-icon">
+          <!-- settings icon -->
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.5 9.5a2 2 0 100-4 2 2 0 000 4z" stroke="#9090b0" stroke-width="1.2"/>
+            <path d="M12.2 9.5a.8.8 0 001.7.3l.5-1.4a.8.8 0 00-.5-1l-.7-.3a.8.8 0 01-.5-.7V7c0-.3.2-.6.5-.7l.7-.3a.8.8 0 00.5-1l-.5-1.4a.8.8 0 00-1-.5l-.8.3a.8.8 0 01-.8-.2l-.1-.1a.8.8 0 010-.9l.3-.7a.8.8 0 00-.5-1.1l-1.4-.3a.8.8 0 00-1 .6l-.1.8a.8.8 0 01-.7.6H7a.8.8 0 01-.7-.6l-.1-.8a.8.8 0 00-1-.6L3.8.8a.8.8 0 00-.5 1l.3.8a.8.8 0 010 .8l-.1.1a.8.8 0 01-.8.2l-.8-.3a.8.8 0 00-1 .5L.4 5.5a.8.8 0 00.5 1l.7.3c.3.1.5.4.5.7v.5c0 .3-.2.6-.5.7l-.7.3a.8.8 0 00-.5 1l.5 1.4a.8.8 0 001 .5l.8-.3a.8.8 0 01.8.2l.1.1a.8.8 0 010 .9l-.3.7a.8.8 0 00.5 1.1l1.4.3a.8.8 0 001-.6l.1-.8c.1-.3.4-.6.7-.6h.5c.3 0 .6.2.7.6l.1.8a.8.8 0 001 .6l1.4-.3a.8.8 0 00.5-1l-.3-.8a.8.8 0 010-.8l.1-.1a.8.8 0 01.8-.2l.8.3a.8.8 0 001-.5z" stroke="#9090b0" stroke-width="1.2"/>
+          </svg>
+        </span>
+        <span class="nav-label">Settings</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.5 13.5A6 6 0 107.5 1.5a6 6 0 000 12z" stroke="#9090b0" stroke-width="1.2"/>
+            <path d="M7.5 5v4M7.5 10.5v.5" stroke="#9090b0" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Documentation</span>
+      </div>
+    </nav>
+
+    <!-- User footer -->
+    <div class="sidebar-footer">
+      <div class="user-avatar">GM</div>
+      <div class="user-info">
+        <div class="user-name">grant@kumbula.dev</div>
+        <div class="user-plan">Pro · 5 projects</div>
+      </div>
+      <span class="user-chevron">⌄</span>
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════════════════════ MAIN ═══════════════════════ -->
+  <main class="main">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <span>Projects</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">api-gateway</span>
+      </div>
+      <div class="topbar-actions">
+        <div class="status-pill running">
+          <span class="dot"></span>
+          Running
+        </div>
+        <button class="topbar-btn ghost">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="opacity:0.6">
+            <path d="M1 6a5 5 0 1010 0A5 5 0 001 6zM6 4v2.5l1.5 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Logs
+        </button>
+        <button class="topbar-btn primary">
+          ↑ Deploy
+        </button>
+      </div>
+    </div>
+
+    <!-- Project header -->
+    <div class="project-header">
+      <div class="project-header-row">
+        <div class="project-title-block">
+          <div class="project-title">api-gateway</div>
+          <div class="project-url">
+            <span class="url-icon">↗</span>
+            <a href="#" class="project-url-text">https://api-gateway.kumbula.local</a>
+          </div>
+        </div>
+        <div class="header-status-group">
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-bar">
+      <div class="tab active">Overview</div>
+      <div class="tab">Builds</div>
+      <div class="tab">Environment</div>
+      <div class="tab">Settings</div>
+    </div>
+
+    <!-- Content grid -->
+    <div class="content">
+
+      <!-- ─ Col 1, Row 1: Deployment overview ─────────────────── -->
+      <div class="card deploy-overview">
+        <div class="card-header">
+          <span class="card-title">Deployment Overview</span>
+          <span class="card-badge teal">Live</span>
+        </div>
+
+        <div class="deploy-stats-row">
+          <div class="deploy-stat">
+            <span class="deploy-stat-label">Uptime</span>
+            <span class="deploy-stat-value teal">99.8<span style="font-size:12px;font-weight:500">%</span></span>
+            <span class="deploy-stat-sub">Last 30 days</span>
+          </div>
+          <div class="deploy-stat">
+            <span class="deploy-stat-label">Builds</span>
+            <span class="deploy-stat-value">47</span>
+            <span class="deploy-stat-sub">Total builds</span>
+          </div>
+          <div class="deploy-stat">
+            <span class="deploy-stat-label">Build time</span>
+            <span class="deploy-stat-value orange">1m 22s</span>
+            <span class="deploy-stat-sub">Last build</span>
+          </div>
+        </div>
+
+        <div style="font-size:10.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:8px;">Last Deployment</div>
+        <div class="last-build-row">
+          <div class="build-commit-dot"></div>
+          <div class="build-commit-info">
+            <div class="build-commit-hash">a3f8c12</div>
+            <div class="build-commit-msg">feat: add rate limiting middleware to all routes</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <div class="build-time">Today, 11:42 AM</div>
+            <div class="build-duration-badge">1m 22s</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─ Col 1, Row 2: Git remote instructions ──────────────── -->
+      <div class="card git-card">
+        <div class="card-header">
+          <span class="card-title">Git Remote Setup</span>
+          <span style="font-size:10.5px;color:var(--text-tertiary);">Push to deploy</span>
+        </div>
+
+        <div class="git-instructions">
+
+          <div class="git-step">
+            <div class="git-step-label">
+              <span class="step-num">1</span>
+              Add the Kumbula remote
+            </div>
+            <div class="code-block">
+              <code><span class="cmd-keyword">git</span> remote add kumbula <span class="cmd-url">git@kumbula.local:grant/api-gateway.git</span></code>
+              <button class="copy-btn" onclick="this.textContent='Copied!'">
+                <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/>
+                  <path d="M1 8V2a1 1 0 011-1h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div class="git-divider">
+            <div class="git-divider-line"></div>
+            <span class="git-divider-text">then</span>
+            <div class="git-divider-line"></div>
+          </div>
+
+          <div class="git-step">
+            <div class="git-step-label">
+              <span class="step-num">2</span>
+              Push your branch to trigger a build
+            </div>
+            <div class="code-block">
+              <code><span class="cmd-keyword">git</span> push kumbula <span class="cmd-arg">main</span></code>
+              <button class="copy-btn" onclick="this.textContent='Copied!'">
+                <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/>
+                  <path d="M1 8V2a1 1 0 011-1h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div class="git-divider">
+            <div class="git-divider-line"></div>
+            <span class="git-divider-text">or deploy a different branch</span>
+            <div class="git-divider-line"></div>
+          </div>
+
+          <div class="git-step">
+            <div class="git-step-label">
+              <span class="step-num">3</span>
+              Push a feature branch (creates preview deployment)
+            </div>
+            <div class="code-block">
+              <code><span class="cmd-keyword">git</span> push kumbula <span class="cmd-arg">my-feature</span><span class="cmd-comment">  # preview deploy</span></code>
+              <button class="copy-btn" onclick="this.textContent='Copied!'">
+                <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/>
+                  <path d="M1 8V2a1 1 0 011-1h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                Copy
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ─ Col 2: Side info cards stacked ─────────────────────── -->
+      <div class="side-cards">
+
+        <!-- Project Info -->
+        <div class="card">
+          <div class="card-header" style="margin-bottom:12px;">
+            <span class="card-title">Project Info</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Status</span>
+            <span class="info-val accent">● Running</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Region</span>
+            <span class="info-val">eu-west-1</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Runtime</span>
+            <span class="info-val">Node 20 LTS</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Port</span>
+            <span class="info-val">3000</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Branch</span>
+            <span class="info-val">main</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Live URL</span>
+            <a href="#" class="info-val-link">api-gateway.kumbula.local</a>
+          </div>
+        </div>
+
+        <!-- Env Vars -->
+        <div class="card">
+          <div class="card-header" style="margin-bottom:12px;">
+            <span class="card-title">Environment Variables</span>
+            <span class="card-badge teal">8 vars</span>
+          </div>
+          <div class="env-count-display">
+            <div class="env-count-num">8</div>
+            <div class="env-count-meta">
+              <div class="env-count-label">Variables configured</div>
+              <div class="env-count-sub">3 secrets · 5 plain</div>
+            </div>
+          </div>
+          <div class="env-quick-list">
+            <div class="env-item">
+              <span class="env-key">DATABASE_URL</span>
+              <span class="env-val-mask">••••••••••</span>
+            </div>
+            <div class="env-item">
+              <span class="env-key">JWT_SECRET</span>
+              <span class="env-val-mask">••••••••••</span>
+            </div>
+            <div class="env-item">
+              <span class="env-key">NODE_ENV</span>
+              <span class="env-val-mask" style="color:var(--text-tertiary);letter-spacing:0">production</span>
+            </div>
+          </div>
+          <div class="env-btn-row">
+            <button class="btn-sm ghost">Manage variables →</button>
+          </div>
+        </div>
+
+        <!-- Uptime/Health sparkline -->
+        <div class="card">
+          <div class="card-header" style="margin-bottom:12px;">
+            <span class="card-title">Build Health</span>
+            <span style="font-size:10px;color:var(--text-tertiary);font-family:var(--font-mono);">Last 30 builds</span>
+          </div>
+          <div class="health-bars">
+            <!-- 30 bars representing build results -->
+            <div class="health-bar ok"   style="height:70%"></div>
+            <div class="health-bar ok"   style="height:85%"></div>
+            <div class="health-bar ok"   style="height:60%"></div>
+            <div class="health-bar warn" style="height:50%"></div>
+            <div class="health-bar ok"   style="height:75%"></div>
+            <div class="health-bar ok"   style="height:90%"></div>
+            <div class="health-bar ok"   style="height:80%"></div>
+            <div class="health-bar fail" style="height:100%"></div>
+            <div class="health-bar ok"   style="height:65%"></div>
+            <div class="health-bar ok"   style="height:70%"></div>
+            <div class="health-bar ok"   style="height:55%"></div>
+            <div class="health-bar ok"   style="height:80%"></div>
+            <div class="health-bar ok"   style="height:75%"></div>
+            <div class="health-bar warn" style="height:45%"></div>
+            <div class="health-bar ok"   style="height:85%"></div>
+            <div class="health-bar ok"   style="height:60%"></div>
+            <div class="health-bar ok"   style="height:95%"></div>
+            <div class="health-bar ok"   style="height:70%"></div>
+            <div class="health-bar ok"   style="height:80%"></div>
+            <div class="health-bar ok"   style="height:65%"></div>
+            <div class="health-bar ok"   style="height:75%"></div>
+            <div class="health-bar ok"   style="height:90%"></div>
+            <div class="health-bar ok"   style="height:55%"></div>
+            <div class="health-bar ok"   style="height:70%"></div>
+            <div class="health-bar ok"   style="height:85%"></div>
+            <div class="health-bar ok"   style="height:60%"></div>
+            <div class="health-bar ok"   style="height:75%"></div>
+            <div class="health-bar ok"   style="height:90%"></div>
+            <div class="health-bar ok"   style="height:80%"></div>
+            <div class="health-bar ok"   style="height:100%"></div>
+          </div>
+          <div class="health-summary">
+            <strong>27/30</strong> builds succeeded &nbsp;·&nbsp; 1 failed &nbsp;·&nbsp; 2 warnings
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─ Full-width quick actions ────────────────────────────── -->
+      <div class="quick-actions">
+        <span class="qa-label">Actions</span>
+        <button class="qa-btn default">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 1v5M6 1l-2 2M6 1l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 8v2a1 1 0 001 1h6a1 1 0 001-1V8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          Redeploy
+        </button>
+        <button class="qa-btn default">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 6a5 5 0 1010 0A5 5 0 001 6z" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M6 4v2.5l1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Build History
+        </button>
+        <button class="qa-btn default">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 2h8v8H2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+            <path d="M4 5h4M4 7h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          View Logs
+        </button>
+        <button class="qa-btn default">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 1L7.5 4.5H11L8.5 6.5L9.5 10L6 8L2.5 10L3.5 6.5L1 4.5H4.5L6 1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+          </svg>
+          Set Custom Domain
+        </button>
+        <div class="qa-sep"></div>
+        <button class="qa-btn danger">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 3h8M5 3V2h2v1M5 5v4M7 5v4M3 3l.5 7h5l.5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Delete Project
+        </button>
+      </div>
+
+    </div><!-- /content -->
+
+  </main><!-- /main -->
+
+</div><!-- /shell -->
+
+</body>
+</html>

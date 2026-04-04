@@ -1,0 +1,1767 @@
+<!-- Concept 6: Component Arrangement — Kanban Board with Live Feed -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1440" />
+  <title>KumbulaCloud — Mission Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #050510;
+      --surface:   #0a0a1a;
+      --surface2:  #0d0d22;
+      --surface3:  #111128;
+      --border:    rgba(0, 212, 255, 0.12);
+      --border-m:  rgba(255, 0, 255, 0.15);
+
+      --blue:      #00d4ff;
+      --blue-dim:  #007a99;
+      --magenta:   #ff00ff;
+      --magenta-dim:#990099;
+      --green:     #00ff88;
+      --green-dim: #006644;
+      --yellow:    #ffe600;
+      --red:       #ff2255;
+      --orange:    #ff8800;
+
+      --text-primary:   #e0f4ff;
+      --text-secondary: #7a9ab5;
+      --text-muted:     #3a5468;
+
+      --font-head: 'Orbitron', monospace;
+      --font-body: 'Exo 2', sans-serif;
+
+      --col-created:  rgba(0, 212, 255, 0.06);
+      --col-building: rgba(255, 136, 0, 0.06);
+      --col-running:  rgba(0, 255, 136, 0.06);
+      --col-failed:   rgba(255, 34, 85, 0.06);
+    }
+
+    html, body {
+      width: 1440px;
+      min-height: 900px;
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* ─── Grid Background ──────────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Scanline overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.07) 2px,
+        rgba(0, 0, 0, 0.07) 4px
+      );
+    }
+
+    /* ─── Keyframes ────────────────────────────────────────────────── */
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(255, 136, 0, 0.6); }
+      70%  { box-shadow: 0 0 0 8px rgba(255, 136, 0, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 136, 0, 0); }
+    }
+
+    @keyframes build-progress {
+      0%   { width: 42%; }
+      50%  { width: 67%; }
+      100% { width: 42%; }
+    }
+
+    @keyframes neon-flicker {
+      0%, 95%, 100% { opacity: 1; }
+      96%           { opacity: 0.4; }
+      97%           { opacity: 1; }
+      98%           { opacity: 0.6; }
+      99%           { opacity: 1; }
+    }
+
+    @keyframes slide-in-top {
+      from { transform: translateY(-20px); opacity: 0; }
+      to   { transform: translateY(0);     opacity: 1; }
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { text-shadow: 0 0 8px currentColor; }
+      50%      { text-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    @keyframes status-dot-blink {
+      0%, 100% { opacity: 1; box-shadow: 0 0 6px currentColor; }
+      50%      { opacity: 0.3; box-shadow: none; }
+    }
+
+    @keyframes feed-scroll {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(-100%); }
+    }
+
+    @keyframes card-enter {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes corner-flash {
+      0%, 100% { opacity: 0.4; }
+      50%      { opacity: 1; }
+    }
+
+    /* ─── Layout ───────────────────────────────────────────────────── */
+    #app {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 900px;
+    }
+
+    /* ─── Top Nav ──────────────────────────────────────────────────── */
+    .topnav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      padding: 0 24px;
+      background: rgba(10, 10, 26, 0.95);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .topnav::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--blue) 20%,
+        var(--magenta) 50%,
+        var(--blue) 80%,
+        transparent 100%
+      );
+      opacity: 0.5;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border: 1.5px solid var(--blue);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.4), inset 0 0 6px rgba(0, 212, 255, 0.1);
+      animation: neon-flicker 8s infinite;
+    }
+
+    .logo-icon svg {
+      width: 18px; height: 18px;
+      fill: var(--blue);
+      filter: drop-shadow(0 0 4px var(--blue));
+    }
+
+    .logo-text {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--blue);
+      text-shadow: 0 0 12px rgba(0, 212, 255, 0.8), 0 0 30px rgba(0, 212, 255, 0.3);
+    }
+
+    .logo-sub {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--magenta);
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+      font-family: var(--font-head);
+    }
+
+    .nav-center {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-item {
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      text-transform: uppercase;
+    }
+
+    .nav-item:hover { color: var(--blue); border-color: var(--border); }
+
+    .nav-item.active {
+      color: var(--blue);
+      border-color: rgba(0, 212, 255, 0.3);
+      background: rgba(0, 212, 255, 0.06);
+      text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sys-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(0, 255, 136, 0.06);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 3px;
+    }
+
+    .sys-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      color: var(--green);
+      animation: status-dot-blink 2s infinite;
+    }
+
+    .sys-label {
+      font-family: var(--font-head);
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--green);
+      text-shadow: 0 0 6px rgba(0, 255, 136, 0.5);
+    }
+
+    .btn-new {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(255, 0, 255, 0.1));
+      border: 1px solid var(--blue);
+      border-radius: 4px;
+      color: var(--blue);
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.2), inset 0 0 8px rgba(0, 212, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-new::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(255, 0, 255, 0.15));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-new:hover {
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.5), 0 0 40px rgba(0, 212, 255, 0.15), inset 0 0 12px rgba(0, 212, 255, 0.1);
+      text-shadow: 0 0 8px var(--blue);
+    }
+
+    .btn-new:hover::before { opacity: 1; }
+
+    .btn-new span { position: relative; z-index: 1; }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-dim), var(--magenta-dim));
+      border: 1.5px solid rgba(0, 212, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue);
+      text-shadow: 0 0 6px rgba(0, 212, 255, 0.8);
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+      cursor: pointer;
+    }
+
+    /* ─── Subheader ────────────────────────────────────────────────── */
+    .subheader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      background: rgba(10, 10, 26, 0.7);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-head);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .bc-root { color: var(--text-muted); }
+    .bc-sep  { color: var(--text-muted); }
+    .bc-cur  { color: var(--blue); text-shadow: 0 0 6px rgba(0, 212, 255, 0.5); }
+
+    .board-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .board-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .board-stat strong {
+      font-family: var(--font-head);
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .board-stat .dot-created  { color: var(--blue); }
+    .board-stat .dot-building { color: var(--orange); }
+    .board-stat .dot-running  { color: var(--green); }
+    .board-stat .dot-failed   { color: var(--red); }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-chip {
+      padding: 4px 10px;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: var(--font-body);
+    }
+
+    .filter-chip:hover { border-color: var(--blue); color: var(--blue); }
+
+    .filter-chip.active {
+      border-color: rgba(0, 212, 255, 0.4);
+      background: rgba(0, 212, 255, 0.08);
+      color: var(--blue);
+    }
+
+    /* ─── Board Layout ─────────────────────────────────────────────── */
+    .board-wrapper {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .kanban-area {
+      flex: 1;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      padding: 16px 16px 16px 24px;
+      gap: 12px;
+    }
+
+    /* ─── Column ───────────────────────────────────────────────────── */
+    .col {
+      flex: 1;
+      min-width: 220px;
+      max-width: 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 6px 6px 0 0;
+      border: 1px solid transparent;
+      border-bottom: none;
+      margin-bottom: 0;
+      position: relative;
+    }
+
+    .col-header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .col-created .col-header {
+      background: rgba(0, 212, 255, 0.04);
+      border-color: rgba(0, 212, 255, 0.15);
+    }
+    .col-created .col-header::before { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+
+    .col-building .col-header {
+      background: rgba(255, 136, 0, 0.04);
+      border-color: rgba(255, 136, 0, 0.2);
+    }
+    .col-building .col-header::before { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+
+    .col-running .col-header {
+      background: rgba(0, 255, 136, 0.04);
+      border-color: rgba(0, 255, 136, 0.15);
+    }
+    .col-running .col-header::before { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+    .col-failed .col-header {
+      background: rgba(255, 34, 85, 0.04);
+      border-color: rgba(255, 34, 85, 0.15);
+    }
+    .col-failed .col-header::before { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+    .col-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .col-icon {
+      width: 16px; height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .col-title {
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .col-created  .col-title { color: var(--blue);   text-shadow: 0 0 6px rgba(0, 212, 255, 0.6); }
+    .col-building .col-title { color: var(--orange);  text-shadow: 0 0 6px rgba(255, 136, 0, 0.6); }
+    .col-running  .col-title { color: var(--green);   text-shadow: 0 0 6px rgba(0, 255, 136, 0.6); }
+    .col-failed   .col-title { color: var(--red);     text-shadow: 0 0 6px rgba(255, 34, 85, 0.6); }
+
+    .col-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      border-radius: 3px;
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .col-created  .col-count { background: rgba(0, 212, 255, 0.15); color: var(--blue); border: 1px solid rgba(0, 212, 255, 0.3); }
+    .col-building .col-count { background: rgba(255, 136, 0, 0.15);  color: var(--orange); border: 1px solid rgba(255, 136, 0, 0.3); }
+    .col-running  .col-count { background: rgba(0, 255, 136, 0.15);  color: var(--green); border: 1px solid rgba(0, 255, 136, 0.3); }
+    .col-failed   .col-count { background: rgba(255, 34, 85, 0.15);  color: var(--red); border: 1px solid rgba(255, 34, 85, 0.3); }
+
+    .col-body {
+      flex: 1;
+      border: 1px solid transparent;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 560px;
+    }
+
+    .col-created  .col-body { background: var(--col-created);  border-color: rgba(0, 212, 255, 0.1); }
+    .col-building .col-body { background: var(--col-building); border-color: rgba(255, 136, 0, 0.12); }
+    .col-running  .col-body { background: var(--col-running);  border-color: rgba(0, 255, 136, 0.1); }
+    .col-failed   .col-body { background: var(--col-failed);   border-color: rgba(255, 34, 85, 0.1); }
+
+    /* ─── Project Cards ────────────────────────────────────────────── */
+    .card {
+      background: var(--surface2);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      animation: card-enter 0.4s ease both;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 212, 255, 0.25);
+      box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.5),
+        0 0 12px rgba(0, 212, 255, 0.1),
+        inset 0 0 16px rgba(0, 212, 255, 0.03);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+      box-shadow: 0 0 6px var(--blue);
+    }
+
+    /* Corner decoration */
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 16px; height: 16px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+      border-right: 1px solid rgba(0, 212, 255, 0.2);
+    }
+
+    /* Building card pulse */
+    .card.building {
+      animation: card-enter 0.4s ease both, pulse-ring 2s infinite;
+      border-color: rgba(255, 136, 0, 0.25);
+    }
+
+    .card.building:hover {
+      border-color: rgba(255, 136, 0, 0.5);
+      box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.5),
+        0 0 16px rgba(255, 136, 0, 0.2);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .card-name {
+      font-family: var(--font-head);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .lang-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 2px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border: 1px solid;
+      font-family: var(--font-head);
+      flex-shrink: 0;
+    }
+
+    .lang-ts   { color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.08); }
+    .lang-go   { color: #06b6d4; border-color: rgba(6, 182, 212, 0.3);  background: rgba(6, 182, 212, 0.08); }
+    .lang-rust { color: #f97316; border-color: rgba(249, 115, 22, 0.3); background: rgba(249, 115, 22, 0.08); }
+    .lang-py   { color: #eab308; border-color: rgba(234, 179, 8, 0.3);  background: rgba(234, 179, 8, 0.08); }
+    .lang-node { color: #86efac; border-color: rgba(134, 239, 172, 0.3); background: rgba(134, 239, 172, 0.08); }
+
+    .card-url {
+      font-size: 10px;
+      color: var(--blue-dim);
+      margin-bottom: 8px;
+      font-style: italic;
+      opacity: 0.8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-url.no-url {
+      color: var(--text-muted);
+      font-style: normal;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .card-commit {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    .commit-hash {
+      color: rgba(0, 212, 255, 0.5);
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+    }
+
+    /* Progress bar for building */
+    .build-progress-wrap {
+      margin-top: 8px;
+    }
+
+    .build-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: var(--orange);
+      margin-bottom: 4px;
+      font-family: var(--font-head);
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 4px rgba(255, 136, 0, 0.5);
+    }
+
+    .build-progress-bar {
+      height: 3px;
+      background: rgba(255, 136, 0, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .build-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--orange), #ffcc00);
+      border-radius: 2px;
+      box-shadow: 0 0 6px var(--orange);
+      animation: build-progress 4s ease-in-out infinite;
+      position: relative;
+    }
+
+    .build-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 20px; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6));
+      border-radius: 2px;
+    }
+
+    .build-step {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+      font-size: 9px;
+      color: var(--orange);
+    }
+
+    .build-spinner {
+      width: 9px; height: 9px;
+      border: 1.5px solid rgba(255, 136, 0, 0.2);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    .card-status-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .status-indicator {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .si-running  { background: var(--green); color: var(--green); animation: status-dot-blink 3s infinite; box-shadow: 0 0 5px var(--green); }
+    .si-building { background: var(--orange); color: var(--orange); animation: status-dot-blink 1s infinite; box-shadow: 0 0 5px var(--orange); }
+    .si-created  { background: var(--blue-dim); box-shadow: 0 0 5px var(--blue-dim); }
+    .si-failed   { background: var(--red); box-shadow: 0 0 5px var(--red); }
+
+    .card-time {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    .card-status-text {
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .st-running  { color: var(--green); text-shadow: 0 0 5px rgba(0, 255, 136, 0.4); }
+    .st-building { color: var(--orange); text-shadow: 0 0 5px rgba(255, 136, 0, 0.4); }
+    .st-created  { color: var(--blue-dim); }
+    .st-failed   { color: var(--red); text-shadow: 0 0 5px rgba(255, 34, 85, 0.4); }
+
+    .error-msg {
+      margin-top: 6px;
+      padding: 5px 7px;
+      background: rgba(255, 34, 85, 0.06);
+      border: 1px solid rgba(255, 34, 85, 0.15);
+      border-radius: 3px;
+      font-size: 9px;
+      color: rgba(255, 34, 85, 0.8);
+      font-family: monospace;
+      line-height: 1.4;
+    }
+
+    .retry-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 5px;
+      padding: 3px 8px;
+      border: 1px solid rgba(255, 34, 85, 0.3);
+      border-radius: 3px;
+      background: rgba(255, 34, 85, 0.06);
+      color: var(--red);
+      font-size: 9px;
+      font-family: var(--font-head);
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.15s;
+    }
+
+    .retry-btn:hover {
+      background: rgba(255, 34, 85, 0.12);
+      box-shadow: 0 0 8px rgba(255, 34, 85, 0.2);
+    }
+
+    /* Add card button */
+    .add-card-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .add-card-btn:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+      color: var(--blue);
+      background: rgba(0, 212, 255, 0.04);
+    }
+
+    /* ─── Activity Feed ────────────────────────────────────────────── */
+    .feed-panel {
+      width: 340px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+      background: rgba(10, 10, 26, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Scanline effect on feed */
+    .feed-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 0, 0, 0.08) 3px,
+        rgba(0, 0, 0, 0.08) 4px
+      );
+    }
+
+    /* Vertical neon line on left edge */
+    .feed-panel::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      width: 1px;
+      background: linear-gradient(180deg,
+        transparent 0%,
+        var(--magenta) 20%,
+        var(--blue) 50%,
+        var(--magenta) 80%,
+        transparent 100%
+      );
+      opacity: 0.4;
+      animation: corner-flash 3s ease-in-out infinite;
+    }
+
+    .feed-header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .feed-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feed-title {
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--magenta);
+      text-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+      text-transform: uppercase;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      background: rgba(255, 0, 255, 0.08);
+      border: 1px solid rgba(255, 0, 255, 0.3);
+      border-radius: 2px;
+      font-family: var(--font-head);
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      color: var(--magenta);
+      text-shadow: 0 0 4px rgba(255, 0, 255, 0.5);
+    }
+
+    .live-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--magenta);
+      animation: status-dot-blink 1s infinite;
+    }
+
+    .feed-filter {
+      display: flex;
+      gap: 4px;
+    }
+
+    .feed-chip {
+      padding: 2px 7px;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 9px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: var(--font-head);
+      letter-spacing: 0.5px;
+    }
+
+    .feed-chip.active {
+      border-color: rgba(255, 0, 255, 0.3);
+      background: rgba(255, 0, 255, 0.06);
+      color: var(--magenta);
+    }
+
+    .feed-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 0, 255, 0.2) transparent;
+    }
+
+    .feed-list::-webkit-scrollbar { width: 3px; }
+    .feed-list::-webkit-scrollbar-track { background: transparent; }
+    .feed-list::-webkit-scrollbar-thumb { background: rgba(255, 0, 255, 0.2); border-radius: 2px; }
+
+    .feed-item {
+      display: flex;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.02);
+      transition: all 0.2s;
+      position: relative;
+      animation: slide-in-top 0.3s ease both;
+    }
+
+    .feed-item:hover {
+      background: rgba(255, 0, 255, 0.04);
+      border-color: rgba(255, 0, 255, 0.1);
+    }
+
+    .feed-item.new-item {
+      animation: slide-in-top 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+      border-color: rgba(255, 0, 255, 0.15);
+      background: rgba(255, 0, 255, 0.05);
+    }
+
+    .feed-time {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      padding-top: 1px;
+      min-width: 40px;
+    }
+
+    .feed-icon {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .feed-icon svg {
+      width: 12px; height: 12px;
+    }
+
+    .feed-content { flex: 1; min-width: 0; }
+
+    .feed-event-line {
+      font-size: 11px;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .feed-project {
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .fp-blue    { color: var(--blue);    text-shadow: 0 0 4px rgba(0, 212, 255, 0.4); }
+    .fp-green   { color: var(--green);   text-shadow: 0 0 4px rgba(0, 255, 136, 0.4); }
+    .fp-orange  { color: var(--orange);  text-shadow: 0 0 4px rgba(255, 136, 0, 0.4); }
+    .fp-red     { color: var(--red);     text-shadow: 0 0 4px rgba(255, 34, 85, 0.4); }
+    .fp-magenta { color: var(--magenta); text-shadow: 0 0 4px rgba(255, 0, 255, 0.4); }
+
+    .feed-sub {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-family: monospace;
+    }
+
+    .feed-tag {
+      display: inline-flex;
+      padding: 1px 5px;
+      border-radius: 2px;
+      font-size: 9px;
+      font-family: var(--font-head);
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+      margin-left: 3px;
+    }
+
+    .ft-deploy  { background: rgba(0, 255, 136, 0.1);  color: var(--green);  border: 1px solid rgba(0, 255, 136, 0.2); }
+    .ft-build   { background: rgba(255, 136, 0, 0.1);  color: var(--orange); border: 1px solid rgba(255, 136, 0, 0.2); }
+    .ft-fail    { background: rgba(255, 34, 85, 0.1);  color: var(--red);    border: 1px solid rgba(255, 34, 85, 0.2); }
+    .ft-env     { background: rgba(255, 0, 255, 0.1);  color: var(--magenta);border: 1px solid rgba(255, 0, 255, 0.2); }
+    .ft-create  { background: rgba(0, 212, 255, 0.1);  color: var(--blue);   border: 1px solid rgba(0, 212, 255, 0.2); }
+
+    /* Feed event type stripe */
+    .fi-deploy  svg { fill: var(--green); filter: drop-shadow(0 0 3px var(--green)); }
+    .fi-build   svg { fill: var(--orange); filter: drop-shadow(0 0 3px var(--orange)); }
+    .fi-fail    svg { fill: var(--red); filter: drop-shadow(0 0 3px var(--red)); }
+    .fi-env     svg { fill: var(--magenta); filter: drop-shadow(0 0 3px var(--magenta)); }
+    .fi-create  svg { fill: var(--blue); filter: drop-shadow(0 0 3px var(--blue)); }
+
+    /* Feed footer */
+    .feed-footer {
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .feed-footer-stat {
+      font-size: 9px;
+      color: var(--text-muted);
+      font-family: var(--font-head);
+      letter-spacing: 0.8px;
+    }
+
+    .feed-footer-stat span {
+      color: var(--magenta);
+      text-shadow: 0 0 4px rgba(255, 0, 255, 0.4);
+    }
+
+    /* ─── Status Bar ───────────────────────────────────────────────── */
+    .statusbar {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      background: rgba(5, 5, 16, 0.95);
+      border-top: 1px solid rgba(0, 212, 255, 0.08);
+      gap: 20px;
+      flex-shrink: 0;
+    }
+
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9px;
+      font-family: var(--font-head);
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .sb-item .val { color: var(--blue); text-shadow: 0 0 4px rgba(0, 212, 255, 0.5); }
+    .sb-item .val-green { color: var(--green); text-shadow: 0 0 4px rgba(0, 255, 136, 0.5); }
+    .sb-item .val-orange { color: var(--orange); }
+
+    .sb-sep { color: rgba(255, 255, 255, 0.08); }
+
+    .sb-right { margin-left: auto; }
+
+    /* ─── Neon corner decorations on col headers ───────────────────── */
+    .col-header .corner-tl,
+    .col-header .corner-tr {
+      position: absolute;
+      width: 6px; height: 6px;
+      top: 4px;
+    }
+    .col-header .corner-tl {
+      left: 4px;
+      border-top: 1px solid currentColor;
+      border-left: 1px solid currentColor;
+      opacity: 0.4;
+    }
+    .col-header .corner-tr {
+      right: 4px;
+      border-top: 1px solid currentColor;
+      border-right: 1px solid currentColor;
+      opacity: 0.4;
+    }
+
+    .col-created  .corner-tl,
+    .col-created  .corner-tr  { color: var(--blue); }
+    .col-building .corner-tl,
+    .col-building .corner-tr  { color: var(--orange); }
+    .col-running  .corner-tl,
+    .col-running  .corner-tr  { color: var(--green); }
+    .col-failed   .corner-tl,
+    .col-failed   .corner-tr  { color: var(--red); }
+
+    /* Delayed animations for staggered card appearance */
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.12s; }
+    .card:nth-child(3) { animation-delay: 0.19s; }
+    .card:nth-child(4) { animation-delay: 0.26s; }
+
+    .feed-item:nth-child(1)  { animation-delay: 0.0s; }
+    .feed-item:nth-child(2)  { animation-delay: 0.06s; }
+    .feed-item:nth-child(3)  { animation-delay: 0.12s; }
+    .feed-item:nth-child(4)  { animation-delay: 0.18s; }
+    .feed-item:nth-child(5)  { animation-delay: 0.24s; }
+    .feed-item:nth-child(6)  { animation-delay: 0.30s; }
+    .feed-item:nth-child(7)  { animation-delay: 0.36s; }
+    .feed-item:nth-child(8)  { animation-delay: 0.42s; }
+    .feed-item:nth-child(9)  { animation-delay: 0.48s; }
+    .feed-item:nth-child(10) { animation-delay: 0.54s; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── Top Navigation ──────────────────────────────────────────── -->
+  <nav class="topnav">
+    <a class="logo" href="#">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">KUMBULA</div>
+        <div class="logo-sub">Cloud Platform</div>
+      </div>
+    </a>
+
+    <div class="nav-center">
+      <div class="nav-item active">Mission Control</div>
+      <div class="nav-item">Projects</div>
+      <div class="nav-item">Deployments</div>
+      <div class="nav-item">Integrations</div>
+      <div class="nav-item">Settings</div>
+    </div>
+
+    <div class="nav-right">
+      <div class="sys-status">
+        <div class="sys-dot"></div>
+        <div class="sys-label">All Systems Operational</div>
+      </div>
+      <button class="btn-new">
+        <span>
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+            <path d="M6 1v10M1 6h10"/>
+          </svg>
+          &nbsp;New Project
+        </span>
+      </button>
+      <div class="avatar">GD</div>
+    </div>
+  </nav>
+
+  <!-- ─── Sub Header ──────────────────────────────────────────────── -->
+  <div class="subheader">
+    <div style="display:flex; align-items:center; gap: 24px;">
+      <div class="breadcrumb">
+        <span class="bc-root">workspace</span>
+        <span class="bc-sep">/</span>
+        <span class="bc-cur">mission-control</span>
+      </div>
+      <div class="board-meta">
+        <div class="board-stat">
+          <span class="dot-created">●</span>
+          <strong>2</strong> Created
+        </div>
+        <div class="board-stat">
+          <span class="dot-building">●</span>
+          <strong>2</strong> Building
+        </div>
+        <div class="board-stat">
+          <span class="dot-running">●</span>
+          <strong>3</strong> Running
+        </div>
+        <div class="board-stat">
+          <span class="dot-failed">●</span>
+          <strong>1</strong> Failed
+        </div>
+      </div>
+    </div>
+    <div class="filter-row">
+      <span style="font-size:10px; color: var(--text-muted); font-family: var(--font-head); letter-spacing:1px; text-transform:uppercase;">Filter:</span>
+      <div class="filter-chip active">All Projects</div>
+      <div class="filter-chip">TypeScript</div>
+      <div class="filter-chip">Go</div>
+      <div class="filter-chip">Python</div>
+      <div class="filter-chip">Rust</div>
+    </div>
+  </div>
+
+  <!-- ─── Main Board ───────────────────────────────────────────────── -->
+  <div class="board-wrapper">
+    <div class="kanban-area">
+
+      <!-- COLUMN: CREATED -->
+      <div class="col col-created">
+        <div class="col-header">
+          <div class="corner-tl"></div>
+          <div class="corner-tr"></div>
+          <div class="col-title-wrap">
+            <div class="col-icon">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--blue)">
+                <rect x="2" y="2" width="12" height="12" rx="2" fill="none" stroke="var(--blue)" stroke-width="1.5"/>
+                <path d="M8 5v6M5 8h6" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="col-title">Created</span>
+          </div>
+          <div class="col-count">2</div>
+        </div>
+        <div class="col-body">
+
+          <!-- Card 1 -->
+          <div class="card">
+            <div class="card-top">
+              <div class="card-name">analytics-engine</div>
+              <div class="lang-badge lang-py">Py</div>
+            </div>
+            <div class="card-url no-url">— not deployed yet —</div>
+            <div class="card-meta">
+              <div class="card-commit">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(0,212,255,0.4)"><circle cx="5" cy="5" r="2"/><line x1="5" y1="0" x2="5" y2="3" stroke="rgba(0,212,255,0.4)" stroke-width="1"/><line x1="5" y1="7" x2="5" y2="10" stroke="rgba(0,212,255,0.4)" stroke-width="1"/></svg>
+                <span class="commit-hash">b2e4f7a</span>
+              </div>
+              <span>main</span>
+            </div>
+            <div class="card-status-row">
+              <div class="status-indicator si-created"></div>
+              <span class="card-status-text st-created">Awaiting Deploy</span>
+              <span class="card-time">2h ago</span>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="card">
+            <div class="card-top">
+              <div class="card-name">notification-svc</div>
+              <div class="lang-badge lang-go">Go</div>
+            </div>
+            <div class="card-url no-url">— not deployed yet —</div>
+            <div class="card-meta">
+              <div class="card-commit">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(0,212,255,0.4)"><circle cx="5" cy="5" r="2"/><line x1="5" y1="0" x2="5" y2="3" stroke="rgba(0,212,255,0.4)" stroke-width="1"/><line x1="5" y1="7" x2="5" y2="10" stroke="rgba(0,212,255,0.4)" stroke-width="1"/></svg>
+                <span class="commit-hash">f8c1d3e</span>
+              </div>
+              <span>feat/push</span>
+            </div>
+            <div class="card-status-row">
+              <div class="status-indicator si-created"></div>
+              <span class="card-status-text st-created">Awaiting Deploy</span>
+              <span class="card-time">5h ago</span>
+            </div>
+          </div>
+
+          <div class="add-card-btn">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Deploy a project here
+          </div>
+
+        </div>
+      </div>
+
+      <!-- COLUMN: BUILDING -->
+      <div class="col col-building">
+        <div class="col-header">
+          <div class="corner-tl"></div>
+          <div class="corner-tr"></div>
+          <div class="col-title-wrap">
+            <div class="col-icon">
+              <div style="width:12px;height:12px;border:1.5px solid var(--orange);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>
+            </div>
+            <span class="col-title">Building</span>
+          </div>
+          <div class="col-count">2</div>
+        </div>
+        <div class="col-body">
+
+          <!-- Card: API Gateway — active build with pulse -->
+          <div class="card building">
+            <div class="card-top">
+              <div class="card-name">api-gateway</div>
+              <div class="lang-badge lang-ts">TS</div>
+            </div>
+            <div class="card-url">api.kumbula.cloud/gw</div>
+            <div class="card-meta">
+              <div class="card-commit">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(255,136,0,0.6)"><circle cx="5" cy="5" r="2"/><line x1="5" y1="0" x2="5" y2="3" stroke="rgba(255,136,0,0.6)" stroke-width="1"/><line x1="5" y1="7" x2="5" y2="10" stroke="rgba(255,136,0,0.6)" stroke-width="1"/></svg>
+                <span class="commit-hash" style="color:rgba(255,136,0,0.7)">a3f2c1d</span>
+              </div>
+              <span>main</span>
+            </div>
+            <div class="build-progress-wrap">
+              <div class="build-progress-label">
+                <span>Building…</span>
+                <span>~42%</span>
+              </div>
+              <div class="build-progress-bar">
+                <div class="build-progress-fill"></div>
+              </div>
+            </div>
+            <div class="build-step">
+              <div class="build-spinner"></div>
+              <span>Running npm run build — step 3/5</span>
+            </div>
+            <div class="card-status-row">
+              <div class="status-indicator si-building"></div>
+              <span class="card-status-text st-building">Building</span>
+              <span class="card-time">4m ago</span>
+            </div>
+          </div>
+
+          <!-- Card: user-service build -->
+          <div class="card building" style="animation-delay:0.1s">
+            <div class="card-top">
+              <div class="card-name">user-service</div>
+              <div class="lang-badge lang-go">Go</div>
+            </div>
+            <div class="card-url">users.kumbula.cloud</div>
+            <div class="card-meta">
+              <div class="card-commit">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(255,136,0,0.6)"><circle cx="5" cy="5" r="2"/><line x1="5" y1="0" x2="5" y2="3" stroke="rgba(255,136,0,0.6)" stroke-width="1"/><line x1="5" y1="7" x2="5" y2="10" stroke="rgba(255,136,0,0.6)" stroke-width="1"/></svg>
+                <span class="commit-hash" style="color:rgba(255,136,0,0.7)">9c7f2b4</span>
+              </div>
+              <span>main</span>
+            </div>
+            <div class="build-progress-wrap">
+              <div class="build-progress-label">
+                <span>Compiling…</span>
+                <span>~71%</span>
+              </div>
+              <div class="build-progress-bar">
+                <div class="build-progress-fill" style="animation-delay:-2s"></div>
+              </div>
+            </div>
+            <div class="build-step">
+              <div class="build-spinner"></div>
+              <span>go build ./cmd/server — step 4/5</span>
+            </div>
+            <div class="card-status-row">
+              <div class="status-indicator si-building"></div>
+              <span class="card-status-text st-building">Building</span>
+              <span class="card-time">9m ago</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- COLUMN: RUNNING -->
+      <div class="col col-running">
+        <div class="col-header">
+          <div class="corner-tl"></div>
+          <div class="corner-tr"></div>
+          <div class="col-title-wrap">
+            <div class="col-icon">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="var(--green)" style="filter:drop-shadow(0 0 3px var(--green))">
+                <circle cx="6" cy="6" r="5" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+                <path d="M4.5 3.5l4 2.5-4 2.5z"/>
+              </svg>
+            </div>
+            <span class="col-title">Running</span>
+          </div>
+          <div class="col-count">3</div>
+        </div>
+        <div class="col-body">
+
+          <!-- Card: landing-page -->
+          <div class="card">
+            <div class="card-top">
+              <div class="card-name">landing-page</div>
+              <div class="lang-badge lang-ts">TS</div>
+            </div>
+            <div class="card-url">kumbula.cloud</div>
+            <div class="card-meta">
+              <div class="card-commit">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(0,255,136,0.5)"><circle cx="5" cy="5" r="2"/><line x1="5" y1="0" x2="5" y2="3" stroke="rgba(0,255,136,0.5)" stroke-width="1"/><line x1="5" y1="7" x2="5" y2="10" stroke="rgba(0,255,136,0.5)" stroke-width="1"/></svg>
+                <span class="commit-hash" style="color:rgba(0,255,136,0.6)">d1a5e9b</span>
+              </div>
+              <span>main</span>
+            </div>
+            <div class="card-status-row">
+              <div class="status-indicator si-running"></div>
+              <span class="card-status-text st-running">Live</span>
+              <span class="card-time">3d ago</span>
+            </div>
+          </div>
+
+          <!-- Card: auth-service -->
+          <div class="card">
+            <div class="card-top">
+              <div class="card-name">auth-service</div>
+              <div class="lang-badge lang-rust">RS</div>
+            </div>
+            <div class="card-url">auth.kumbula.cloud</div>
+            <div class="card-meta">
+              <div class="card-commit">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(0,255,136,0.5)"><circle cx="5" cy="5" r="2"/><line x1="5" y1="0" x2="5" y2="3" stroke="rgba(0,255,136,0.5)" stroke-width="1"/><line x1="5" y1="7" x2="5" y2="10" stroke="rgba(0,255,136,0.5)" stroke-width="1"/></svg>
+                <span class="commit-hash" style="color:rgba(0,255,136,0.6)">7f4a2c8</span>
+              </div>
+              <span>main</span>
+            </div>
+            <div class="card-status-row">
+              <div class="status-indicator si-running"></div>
+              <span class="card-status-text st-running">Live</span>
+              <span class="card-time">1d ago</span>
+            </div>
+          </div>
+
+          <!-- Card: payments-api -->
+          <div class="card">
+            <div class="card-top">
+              <div class="card-name">payments-api</div>
+              <div class="lang-badge lang-node">Node</div>
+            </div>
+            <div class="card-url">pay.kumbula.cloud/v2</div>
+            <div class="card-meta">
+              <div class="card-commit">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(0,255,136,0.5)"><circle cx="5" cy="5" r="2"/><line x1="5" y1="0" x2="5" y2="3" stroke="rgba(0,255,136,0.5)" stroke-width="1"/><line x1="5" y1="7" x2="5" y2="10" stroke="rgba(0,255,136,0.5)" stroke-width="1"/></svg>
+                <span class="commit-hash" style="color:rgba(0,255,136,0.6)">3b9e1f2</span>
+              </div>
+              <span>main</span>
+            </div>
+            <div class="card-status-row">
+              <div class="status-indicator si-running"></div>
+              <span class="card-status-text st-running">Live</span>
+              <span class="card-time">6h ago</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- COLUMN: FAILED -->
+      <div class="col col-failed">
+        <div class="col-header">
+          <div class="corner-tl"></div>
+          <div class="corner-tr"></div>
+          <div class="col-title-wrap">
+            <div class="col-icon">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="filter:drop-shadow(0 0 3px var(--red))">
+                <circle cx="7" cy="7" r="6" stroke="var(--red)" stroke-width="1.5"/>
+                <path d="M4.5 4.5l5 5M9.5 4.5l-5 5" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="col-title">Failed</span>
+          </div>
+          <div class="col-count">1</div>
+        </div>
+        <div class="col-body">
+
+          <!-- Card: billing-worker -->
+          <div class="card">
+            <div class="card-top">
+              <div class="card-name">billing-worker</div>
+              <div class="lang-badge lang-py">Py</div>
+            </div>
+            <div class="card-url">— not running —</div>
+            <div class="card-meta">
+              <div class="card-commit">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(255,34,85,0.5)"><circle cx="5" cy="5" r="2"/><line x1="5" y1="0" x2="5" y2="3" stroke="rgba(255,34,85,0.5)" stroke-width="1"/><line x1="5" y1="7" x2="5" y2="10" stroke="rgba(255,34,85,0.5)" stroke-width="1"/></svg>
+                <span class="commit-hash" style="color:rgba(255,34,85,0.6)">e5c8d1a</span>
+              </div>
+              <span>main</span>
+            </div>
+            <div class="error-msg">
+              ModuleNotFoundError:<br>No module named 'stripe'<br>exit code: 1
+            </div>
+            <div>
+              <div class="retry-btn">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><path d="M5 1a4 4 0 1 1-3.46 2"/><path d="M1.5 1v2.5H4"/></svg>
+                Retry Build
+              </div>
+            </div>
+            <div class="card-status-row">
+              <div class="status-indicator si-failed"></div>
+              <span class="card-status-text st-failed">Build Failed</span>
+              <span class="card-time">22m ago</span>
+            </div>
+          </div>
+
+          <div class="add-card-btn" style="border-color:rgba(255,34,85,0.15); color:var(--text-muted);">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M5 1a4 4 0 1 1 0 8A4 4 0 0 1 5 1zm0 2v2.5l1.5 1" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+            View resolved builds
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /kanban-area -->
+
+    <!-- ─── Activity Feed ──────────────────────────────────────────── -->
+    <div class="feed-panel">
+      <div class="feed-header">
+        <div class="feed-title-wrap">
+          <div class="feed-title">Activity Feed</div>
+          <div class="live-badge">
+            <div class="live-dot"></div>
+            LIVE
+          </div>
+        </div>
+        <div class="feed-filter">
+          <div class="feed-chip active">All</div>
+          <div class="feed-chip">Build</div>
+          <div class="feed-chip">Deploy</div>
+          <div class="feed-chip">Error</div>
+        </div>
+      </div>
+
+      <div class="feed-list">
+
+        <!-- Event 1 — new, highlighted -->
+        <div class="feed-item new-item">
+          <div class="feed-time">14:34</div>
+          <div class="feed-icon fi-build">
+            <svg viewBox="0 0 12 12"><path d="M2 10L6 2l4 8H2z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 7.5h3" stroke="currentColor" stroke-width="1"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-orange">user-service</span>
+              &nbsp;build started
+              <span class="feed-tag ft-build">BUILD</span>
+            </div>
+            <div class="feed-sub">commit 9c7f2b4 · branch main · triggered by git push</div>
+          </div>
+        </div>
+
+        <!-- Event 2 -->
+        <div class="feed-item new-item" style="animation-delay:0.06s">
+          <div class="feed-time">14:32</div>
+          <div class="feed-icon fi-deploy">
+            <svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v4M4.5 7.5L6 9l1.5-1.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-green">api-gateway</span>
+              &nbsp;deployed successfully
+              <span class="feed-tag ft-deploy">LIVE</span>
+            </div>
+            <div class="feed-sub">v1.14.2 · duration 3m 22s · 2 replicas</div>
+          </div>
+        </div>
+
+        <!-- Event 3 -->
+        <div class="feed-item">
+          <div class="feed-time">14:28</div>
+          <div class="feed-icon fi-build">
+            <svg viewBox="0 0 12 12"><path d="M2 10L6 2l4 8H2z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 7.5h3" stroke="currentColor" stroke-width="1"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-orange">user-service</span>
+              &nbsp;build started
+              <span class="feed-tag ft-build">BUILD</span>
+            </div>
+            <div class="feed-sub">commit a3f2c1d · branch main · triggered by git push</div>
+          </div>
+        </div>
+
+        <!-- Event 4 -->
+        <div class="feed-item">
+          <div class="feed-time">14:25</div>
+          <div class="feed-icon fi-fail">
+            <svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4 4l4 4M8 4l-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-red">landing-page</span>
+              &nbsp;build failed
+              <span class="feed-tag ft-fail">FAIL</span>
+            </div>
+            <div class="feed-sub">ModuleNotFoundError — exit 1 · commit e5c8d1a</div>
+          </div>
+        </div>
+
+        <!-- Event 5 -->
+        <div class="feed-item">
+          <div class="feed-time">14:19</div>
+          <div class="feed-icon fi-env">
+            <svg viewBox="0 0 12 12"><rect x="1.5" y="3" width="9" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4 3V2a2 2 0 0 1 4 0v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-magenta">payments-api</span>
+              &nbsp;env vars updated
+              <span class="feed-tag ft-env">ENV</span>
+            </div>
+            <div class="feed-sub">STRIPE_SECRET_KEY rotated · WEBHOOK_SECRET added</div>
+          </div>
+        </div>
+
+        <!-- Event 6 -->
+        <div class="feed-item">
+          <div class="feed-time">14:12</div>
+          <div class="feed-icon fi-deploy">
+            <svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v4M4.5 7.5L6 9l1.5-1.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-green">auth-service</span>
+              &nbsp;deployed successfully
+              <span class="feed-tag ft-deploy">LIVE</span>
+            </div>
+            <div class="feed-sub">v0.9.1 · duration 1m 58s · Rust build cache hit</div>
+          </div>
+        </div>
+
+        <!-- Event 7 -->
+        <div class="feed-item">
+          <div class="feed-time">13:55</div>
+          <div class="feed-icon fi-create">
+            <svg viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v4M4 6h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-blue">notification-svc</span>
+              &nbsp;project created
+              <span class="feed-tag ft-create">NEW</span>
+            </div>
+            <div class="feed-sub">Go · linked to github.com/grantm/notification-svc</div>
+          </div>
+        </div>
+
+        <!-- Event 8 -->
+        <div class="feed-item">
+          <div class="feed-time">13:41</div>
+          <div class="feed-icon fi-deploy">
+            <svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v4M4.5 7.5L6 9l1.5-1.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-green">payments-api</span>
+              &nbsp;deployed successfully
+              <span class="feed-tag ft-deploy">LIVE</span>
+            </div>
+            <div class="feed-sub">v2.3.0 · duration 2m 11s · 3 replicas active</div>
+          </div>
+        </div>
+
+        <!-- Event 9 -->
+        <div class="feed-item">
+          <div class="feed-time">13:30</div>
+          <div class="feed-icon fi-create">
+            <svg viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v4M4 6h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-blue">analytics-engine</span>
+              &nbsp;project created
+              <span class="feed-tag ft-create">NEW</span>
+            </div>
+            <div class="feed-sub">Python 3.12 · linked to github.com/grantm/analytics-engine</div>
+          </div>
+        </div>
+
+        <!-- Event 10 -->
+        <div class="feed-item">
+          <div class="feed-time">12:58</div>
+          <div class="feed-icon fi-env">
+            <svg viewBox="0 0 12 12"><rect x="1.5" y="3" width="9" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4 3V2a2 2 0 0 1 4 0v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="feed-content">
+            <div class="feed-event-line">
+              <span class="feed-project fp-magenta">auth-service</span>
+              &nbsp;env vars updated
+              <span class="feed-tag ft-env">ENV</span>
+            </div>
+            <div class="feed-sub">JWT_SECRET rotated · SESSION_TTL set to 86400</div>
+          </div>
+        </div>
+
+      </div><!-- /feed-list -->
+
+      <div class="feed-footer">
+        <div class="feed-footer-stat">Events today: <span>47</span></div>
+        <div class="feed-footer-stat">Last updated: <span>14:34:12</span></div>
+      </div>
+    </div><!-- /feed-panel -->
+
+  </div><!-- /board-wrapper -->
+
+  <!-- ─── Status Bar ──────────────────────────────────────────────── -->
+  <div class="statusbar">
+    <div class="sb-item">
+      <span>Region:</span>
+      <span class="val">eu-west-1</span>
+    </div>
+    <div class="sb-sep">|</div>
+    <div class="sb-item">
+      <span>Projects:</span>
+      <span class="val">8</span>
+    </div>
+    <div class="sb-sep">|</div>
+    <div class="sb-item">
+      <span>Builds today:</span>
+      <span class="val">23</span>
+    </div>
+    <div class="sb-sep">|</div>
+    <div class="sb-item">
+      <span>Uptime:</span>
+      <span class="val-green">99.97%</span>
+    </div>
+    <div class="sb-sep">|</div>
+    <div class="sb-item">
+      <span>Active builds:</span>
+      <span class="val-orange">2</span>
+    </div>
+    <div class="sb-sep">|</div>
+    <div class="sb-item">
+      <span>Latency:</span>
+      <span class="val">18ms</span>
+    </div>
+    <div class="sb-item sb-right">
+      <span>KumbulaCloud v0.9.4-beta · GrantMcDonogh's Workspace</span>
+    </div>
+  </div>
+
+</div><!-- /#app -->
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KumbulaCloud UI Concepts — Viewer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #111118;
+    border-bottom: 1px solid #222;
+    flex-shrink: 0;
+  }
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .brand {
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .brand-accent { color: #00d4aa; }
+  .tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .tab {
+    padding: 8px 16px;
+    background: #1a1a24;
+    border: 1px solid #2a2a35;
+    color: #888;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-radius: 6px;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab:hover {
+    background: #222230;
+    color: #ccc;
+    border-color: #3a3a45;
+  }
+  .tab.active {
+    background: #00d4aa15;
+    color: #00d4aa;
+    border-color: #00d4aa50;
+  }
+  .tab-num {
+    font-weight: 700;
+  }
+  .tab-label {
+    font-size: 11px;
+    opacity: 0.7;
+  }
+  .nav-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .nav-btn {
+    padding: 8px 18px;
+    background: #1a1a24;
+    border: 1px solid #2a2a35;
+    color: #ccc;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .nav-btn:hover {
+    background: #222230;
+    border-color: #3a3a45;
+  }
+  .nav-btn:active {
+    transform: scale(0.97);
+  }
+  .counter {
+    font-size: 13px;
+    color: #666;
+    min-width: 40px;
+    text-align: center;
+  }
+  .info-bar {
+    padding: 8px 24px;
+    background: #0e0e16;
+    border-bottom: 1px solid #1a1a24;
+    font-size: 13px;
+    color: #666;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .concept-type {
+    color: #00d4aa;
+    font-weight: 600;
+  }
+  .concept-name {
+    color: #ccc;
+  }
+  .hint {
+    margin-left: auto;
+    font-size: 11px;
+    color: #555;
+  }
+  .hint kbd {
+    background: #1a1a24;
+    border: 1px solid #2a2a35;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #888;
+  }
+  .iframe-wrapper {
+    flex: 1;
+    position: relative;
+  }
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="toolbar-left">
+    <div class="brand">Kumbula<span class="brand-accent">Cloud</span> UI Concepts</div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+  <div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn">&#8592; Prev</button>
+    <span class="counter" id="counter">1 / 6</span>
+    <button class="nav-btn" id="nextBtn">Next &#8594;</button>
+  </div>
+</div>
+
+<div class="info-bar" id="infoBar">
+  <span class="concept-type" id="conceptType"></span>
+  <span class="concept-name" id="conceptName"></span>
+  <span class="hint">Navigate: <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> arrow keys or click tabs</span>
+</div>
+
+<div class="iframe-wrapper">
+  <iframe id="viewer" src=""></iframe>
+</div>
+
+<script>
+(function() {
+  var concepts = [
+    { file: 'kumbula-01-concept-01.html', tab: 'Layout 1', type: 'Layout Structure', name: 'Swiss Minimalist Sidebar' },
+    { file: 'kumbula-01-concept-02.html', tab: 'Layout 2', type: 'Layout Structure', name: 'Terminal Command Bar' },
+    { file: 'kumbula-01-concept-03.html', tab: 'Style 1',  type: 'Visual Style',     name: 'Glassmorphism Aurora' },
+    { file: 'kumbula-01-concept-04.html', tab: 'Style 2',  type: 'Visual Style',     name: 'Neo-Brutalist' },
+    { file: 'kumbula-01-concept-05.html', tab: 'Arrange 1',type: 'Arrangement',      name: 'Wizard Setup Flow' },
+    { file: 'kumbula-01-concept-06.html', tab: 'Arrange 2',type: 'Arrangement',      name: 'Kanban Board + Live Feed' }
+  ];
+
+  var current = 0;
+  var tabsContainer = document.getElementById('tabs');
+  var tabElements = [];
+
+  concepts.forEach(function(c, i) {
+    var tab = document.createElement('div');
+    tab.className = 'tab' + (i === 0 ? ' active' : '');
+
+    var numSpan = document.createElement('span');
+    numSpan.className = 'tab-num';
+    numSpan.textContent = String(i + 1);
+
+    var labelSpan = document.createElement('span');
+    labelSpan.className = 'tab-label';
+    labelSpan.textContent = c.tab;
+
+    tab.appendChild(numSpan);
+    tab.appendChild(labelSpan);
+    tab.addEventListener('click', function() { goTo(i); });
+    tabsContainer.appendChild(tab);
+    tabElements.push(tab);
+  });
+
+  function goTo(index) {
+    current = index;
+    document.getElementById('viewer').src = concepts[current].file;
+    document.getElementById('counter').textContent = (current + 1) + ' / 6';
+    document.getElementById('conceptType').textContent = concepts[current].type;
+    document.getElementById('conceptName').textContent = concepts[current].name;
+    tabElements.forEach(function(t, i) {
+      if (i === current) {
+        t.classList.add('active');
+      } else {
+        t.classList.remove('active');
+      }
+    });
+  }
+
+  function navigate(dir) {
+    goTo((current + dir + concepts.length) % concepts.length);
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', function() { navigate(-1); });
+  document.getElementById('nextBtn').addEventListener('click', function() { navigate(1); });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') navigate(-1);
+    if (e.key === 'ArrowRight') navigate(1);
+  });
+
+  goTo(0);
+})();
+</script>
+
+</body>
+</html>
