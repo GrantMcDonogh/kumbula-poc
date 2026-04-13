@@ -95,6 +95,16 @@ func main() {
 		}
 	})
 	mux.HandleFunc("/logout", handleLogout)
+	mux.Handle("/settings", RequireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			handleUserSettings(w, r)
+		case http.MethodPost:
+			handleUserSettingsSave(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})))
 
 	// --- Authenticated routes ---
 	mux.Handle("/", RequireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -163,6 +173,8 @@ func routeProject(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		http.NotFound(w, r)
+	case "import":
+		handleGitHubImport(w, r)
 	default:
 		http.NotFound(w, r)
 	}

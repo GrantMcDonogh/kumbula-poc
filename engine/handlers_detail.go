@@ -39,6 +39,10 @@ func handleProjectDetail(w http.ResponseWriter, r *http.Request) {
 		if len(builds) > 0 {
 			data["LastBuild"] = builds[0]
 		}
+		freshUser, _ := GetUserByID(CtxUser(r).ID)
+		if freshUser != nil {
+			data["HasGithubToken"] = freshUser.GithubToken != ""
+		}
 	case "builds":
 		builds, err := GetBuildsByProject(project.ID)
 		if err != nil {

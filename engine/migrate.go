@@ -47,6 +47,9 @@ func RunMigrations() error {
 			user_id    INTEGER NOT NULL REFERENCES users(id),
 			expires_at TIMESTAMPTZ NOT NULL
 		)`,
+		// --- GitHub import columns ---
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS github_token TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_url TEXT NOT NULL DEFAULT ''`,
 	}
 
 	for _, ddl := range tables {
