@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__mrkdwn__list_folders",
+      "mcp__mrkdwn__create_folder",
+      "mcp__mrkdwn__create_note",
+      "mcp__mrkdwn__update_note"
+    ]
+  }
+}
